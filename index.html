@@ -1,1294 +1,1227 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>Jovani Salazar - Tuxtla 2026</title>
-
-    <!-- Google Fonts - Fuentes llamativas -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Righteous&family=Fredoka:wght@700&family=Titan+One&display=swap"
-      rel="stylesheet"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JS - El Juego del Pozol 🐰</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Fredoka:wght@700&family=Titan+One&display=swap" rel="stylesheet">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX');
+    </script>
 
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      body {
-        font-family: "Fredoka", "Arial", sans-serif;
-        overflow: hidden;
-        width: 100vw;
-        height: 100vh;
-        background: linear-gradient(135deg, #32a9b7 0%, #f04e85 100%);
-        position: relative;
-      }
-
-      /* Video de cámara frontal como fondo */
-      #video {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: 1;
-        transform: scaleX(-1); /* Espejo */
-      }
-
-      /* Overlay con degradado */
-      .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          135deg,
-          rgba(50, 169, 183, 0.3) 0%,
-          rgba(240, 78, 133, 0.3) 100%
-        );
-        z-index: 2;
-        pointer-events: none;
-      }
-
-      /* Contenedor principal */
-      .container {
-        position: relative;
-        z-index: 3;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-around;
-        align-items: center;
-        padding: 20px;
-      }
-
-      /* Título principal */
-      .title {
-        text-align: center;
-        color: white;
-        text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3),
-          8px 8px 20px rgba(0, 0, 0, 0.5);
-        animation: pulse 2s ease-in-out infinite;
-      }
-
-      .title h1 {
-        font-family: "Titan One", cursive;
-        font-size: clamp(2.5rem, 10vw, 5rem);
-        font-weight: bold;
-        margin-bottom: 10px;
-        letter-spacing: 3px;
-        line-height: 1.2;
-      }
-
-      .title p {
-        font-family: "Righteous", cursive;
-        font-size: clamp(1.2rem, 5vw, 2rem);
-        font-weight: 700;
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.05);
-        }
-      }
-
-      /* Contenedor de elementos interactivos */
-      .elements-container {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        width: 100%;
-        max-width: 800px;
-        gap: 20px;
-        flex-wrap: wrap;
-      }
-
-      /* Elementos clickeables */
-      .interactive-element {
-        cursor: pointer;
-        transition: transform 0.3s ease, filter 0.3s ease;
-        filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
-        -webkit-user-select: none;
-        user-select: none;
-        position: relative;
-      }
-
-      .interactive-element:hover {
-        transform: scale(1.1);
-        filter: drop-shadow(0 15px 30px rgba(240, 78, 133, 0.6)) brightness(1.2);
-      }
-
-      .interactive-element img {
-        width: clamp(150px, 30vw, 250px);
-        height: auto;
-      }
-
-      .interactive-element:active {
-        transform: scale(0.95);
-      }
-
-      /* Efecto de pulso en hover */
-      @keyframes pulse-hover {
-        0%,
-        100% {
-          transform: scale(1);
-        }
-        50% {
-          transform: scale(1.05);
-        }
-      }
-
-      .interactive-element:hover {
-        animation: pulse-hover 1s ease-in-out infinite;
-      }
-
-      /* Animación de rebote mejorada */
-      @keyframes bounce {
-        0%,
-        100% {
-          transform: translateY(0) rotate(0deg) scale(1);
-        }
-        15% {
-          transform: translateY(-40px) rotate(-15deg) scale(1.1);
-        }
-        30% {
-          transform: translateY(-70px) rotate(0deg) scale(1.15);
-        }
-        45% {
-          transform: translateY(-40px) rotate(15deg) scale(1.1);
-        }
-        60% {
-          transform: translateY(-15px) rotate(-5deg) scale(1.05);
-        }
-        75% {
-          transform: translateY(-5px) rotate(5deg) scale(1.02);
-        }
-      }
-
-      .bounce {
-        animation: bounce 0.8s ease;
-      }
-
-      /* Animación de giro mejorada */
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg) scale(1);
-          filter: brightness(1);
-        }
-        25% {
-          transform: rotate(180deg) scale(1.3);
-          filter: brightness(1.5);
-        }
-        50% {
-          transform: rotate(360deg) scale(1.5);
-          filter: brightness(2);
-        }
-        75% {
-          transform: rotate(540deg) scale(1.3);
-          filter: brightness(1.5);
-        }
-        100% {
-          transform: rotate(720deg) scale(1);
-          filter: brightness(1);
-        }
-      }
-
-      .spin {
-        animation: spin 1s ease;
-      }
-
-      /* Animación de sacudida mejorada */
-      @keyframes shake {
-        0%,
-        100% {
-          transform: translateX(0) rotate(0deg);
-        }
-        10% {
-          transform: translateX(-15px) rotate(-10deg) scale(1.1);
-        }
-        20% {
-          transform: translateX(15px) rotate(10deg) scale(1.1);
-        }
-        30% {
-          transform: translateX(-15px) rotate(-10deg) scale(1.15);
-        }
-        40% {
-          transform: translateX(15px) rotate(10deg) scale(1.15);
-        }
-        50% {
-          transform: translateX(-10px) rotate(-5deg) scale(1.1);
-        }
-        60% {
-          transform: translateX(10px) rotate(5deg) scale(1.1);
-        }
-        70% {
-          transform: translateX(-5px) rotate(-3deg) scale(1.05);
-        }
-        80% {
-          transform: translateX(5px) rotate(3deg) scale(1.05);
-        }
-        90% {
-          transform: translateX(-2px) rotate(-1deg) scale(1.02);
-        }
-      }
-
-      .shake {
-        animation: shake 0.6s ease;
-      }
-
-      /* Partículas/Confeti */
-      .particle {
-        position: fixed;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 10;
-        animation: fall 2s ease-out forwards;
-      }
-
-      @keyframes fall {
-        0% {
-          opacity: 1;
-          transform: translateY(0) rotate(0deg);
-        }
-        100% {
-          opacity: 0;
-          transform: translateY(100vh) rotate(720deg);
-        }
-      }
-
-      /* Contador de interacciones */
-      .counter {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 15px 25px;
-        border-radius: 50px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        z-index: 4;
-        font-weight: bold;
-        color: #32a9b7;
-        font-size: clamp(0.9rem, 3vw, 1.2rem);
-        font-family: "Fredoka", sans-serif;
-      }
-
-      /* Mensaje de próximamente */
-      .coming-soon {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(240, 78, 133, 0.95);
-        color: white;
-        padding: 15px 30px;
-        border-radius: 25px;
-        font-size: clamp(0.9rem, 3vw, 1.2rem);
-        font-weight: bold;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        z-index: 4;
-        animation: pulse 2s ease-in-out infinite;
-        font-family: "Righteous", cursive;
-      }
-
-      /* Mensaje de error de cámara */
-      .error-message {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.9);
-        color: white;
-        padding: 30px;
-        border-radius: 15px;
-        text-align: center;
-        z-index: 5;
-        display: none;
-      }
-
-      /* Modal de bienvenida */
-      .welcome-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.95);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        animation: fadeIn 0.5s ease;
-      }
-
-      .welcome-modal.hidden {
-        display: none;
-      }
-
-      .welcome-modal h2 {
-        font-family: "Titan One", cursive;
-        font-size: clamp(3rem, 12vw, 6rem);
-        color: #f04e85;
-        text-shadow: 0 0 30px rgba(240, 78, 133, 0.8),
-          4px 4px 0px rgba(0, 0, 0, 0.3);
-        margin-bottom: 30px;
-        animation: pulse 1.5s ease-in-out infinite;
-        line-height: 1.2;
-        text-align: center;
-        width: 100%;
-        padding: 0 20px;
-        word-wrap: break-word;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .welcome-modal button {
-        font-family: "Righteous", cursive;
-        font-size: clamp(1.5rem, 6vw, 2.5rem);
-        padding: 20px 50px;
-        background: linear-gradient(135deg, #32a9b7, #f04e85);
-        border: none;
-        border-radius: 50px;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 10px 30px rgba(240, 78, 133, 0.5);
-        transition: all 0.3s ease;
-        animation: pulse 2s ease-in-out infinite;
-      }
-
-      .welcome-modal button:hover {
-        transform: scale(1.1);
-        box-shadow: 0 15px 40px rgba(240, 78, 133, 0.8);
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-
-      /* Modal final de canción */
-      .song-end-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.9);
-        display: none;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        padding: 20px;
-      }
-
-      .song-end-modal.show {
-        display: flex;
-        animation: fadeIn 0.5s ease;
-      }
-
-      .song-end-modal h2 {
-        font-family: "Righteous", cursive;
-        font-size: clamp(2rem, 8vw, 4rem);
-        color: white;
-        margin-bottom: 30px;
-        text-align: center;
-        text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
-      }
-
-      .song-end-modal button {
-        font-family: "Fredoka", sans-serif;
-        font-size: clamp(1.2rem, 5vw, 2rem);
-        padding: 20px 50px;
-        background: #f04e85;
-        border: none;
-        border-radius: 50px;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        margin: 10px;
-        box-shadow: 0 5px 20px rgba(240, 78, 133, 0.5);
-        transition: all 0.3s ease;
-      }
-
-      .song-end-modal button:hover {
-        transform: scale(1.1);
-        background: #32a9b7;
-      }
-
-      /* Dedo indicador animado */
-      .finger-pointer {
-        position: fixed;
-        font-size: 80px;
-        z-index: 999;
-        pointer-events: none;
-        animation: pointAndClick 2s ease-in-out infinite;
-        filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
-      }
-
-      @keyframes pointAndClick {
-        0%,
-        100% {
-          transform: translate(0, 0) scale(1);
-        }
-        25% {
-          transform: translate(-10px, -10px) scale(1.1);
-        }
-        50% {
-          transform: translate(0, 0) scale(0.9);
-        }
-        75% {
-          transform: translate(-10px, -10px) scale(1.1);
-        }
-      }
-
-      /* Animación de llamado de atención para elementos */
-      @keyframes callAttention {
-        0%,
-        100% {
-          transform: scale(1) rotate(0deg);
-        }
-        10% {
-          transform: scale(1.15) rotate(-5deg);
-        }
-        20% {
-          transform: scale(1.1) rotate(5deg);
-        }
-        30% {
-          transform: scale(1.15) rotate(-5deg);
-        }
-        40% {
-          transform: scale(1.1) rotate(5deg);
-        }
-        50% {
-          transform: scale(1.2) rotate(0deg);
-        }
-        60% {
-          transform: scale(1.1) rotate(5deg);
-        }
-        70% {
-          transform: scale(1.15) rotate(-5deg);
-        }
-        80% {
-          transform: scale(1.1) rotate(5deg);
-        }
-        90% {
-          transform: scale(1.15) rotate(-5deg);
-        }
-      }
-
-      .call-attention {
-        animation: callAttention 2s ease-in-out infinite;
-        filter: drop-shadow(0 0 20px rgba(240, 78, 133, 0.8)) brightness(1.3);
-      }
-
-      /* Responsive */
-      @media (max-width: 768px) {
-        .elements-container {
-          flex-direction: column;
-          gap: 30px;
-          padding: 10px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .interactive-element img {
-          width: clamp(140px, 45vw, 220px);
+        body {
+            font-family: 'Fredoka', 'Arial', sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(135deg, #32A9B7 0%, #F04E85 100%);
         }
 
-        .title h1 {
-          font-size: clamp(2rem, 12vw, 4rem);
-          margin-bottom: 5px;
+        /* Video de cámara frontal */
+        #video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            transform: scaleX(-1);
         }
 
-        .title p {
-          font-size: clamp(1rem, 5vw, 1.8rem);
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(50, 169, 183, 0.3) 0%, rgba(240, 78, 133, 0.3) 100%);
+            z-index: 2;
+            pointer-events: none;
         }
 
-        .counter {
-          top: 10px;
-          right: 10px;
-          padding: 12px 20px;
-          font-size: clamp(0.8rem, 3.5vw, 1rem);
+        /* Área de juego */
+        #gameArea {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
         }
 
-        .coming-soon {
-          bottom: 10px;
-          right: 10px;
-          padding: 12px 20px;
-          font-size: clamp(0.8rem, 3.5vw, 1rem);
+        /* Logo JS - centro superior */
+        .logo {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Titan One', cursive;
+            font-size: clamp(2.5rem, 10vw, 4rem);
+            z-index: 10;
+            text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.5);
         }
 
-        .finger-pointer {
-          font-size: 60px;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .title h1 {
-          font-size: clamp(1.8rem, 13vw, 3.5rem);
-          letter-spacing: 1px;
+        .logo .j {
+            color: #32A9B7;
         }
 
-        .title p {
-          font-size: clamp(0.9rem, 5.5vw, 1.5rem);
+        .logo .s {
+            color: #F04E85;
         }
 
-        .interactive-element img {
-          width: clamp(120px, 50vw, 200px);
+        /* Cronómetro - superior izquierda */
+        .timer-display {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
-        .counter,
-        .coming-soon {
-          font-size: 0.75rem;
-          padding: 10px 15px;
+        .timer-label {
+            font-family: 'Righteous', cursive;
+            font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+            color: #32A9B7;
+            margin-bottom: 5px;
+        }
+
+        .timer-value {
+            font-family: 'Titan One', cursive;
+            font-size: clamp(2rem, 7vw, 3rem);
+            color: #F04E85;
+            line-height: 1;
+        }
+
+        /* Puntuación - superior derecha */
+        .score-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            text-align: right;
+        }
+
+        .score-label {
+            font-family: 'Righteous', cursive;
+            font-size: clamp(0.8rem, 3vw, 1rem);
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-family: 'Titan One', cursive;
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            color: #FFD700;
+            text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.5);
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .level-display {
+            font-family: 'Righteous', cursive;
+            font-size: clamp(0.9rem, 3.5vw, 1.2rem);
+            color: #32A9B7;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Shooter - Pozol (izquierda) */
+        .shooter-left {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: clamp(80px, 15vw, 120px);
+            height: clamp(80px, 15vw, 120px);
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.1s ease;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+        }
+
+        .shooter-left:active {
+            transform: scale(0.9);
+        }
+
+        .shooter-left img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Shooter - Conejo (derecha) */
+        .shooter-right {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: clamp(80px, 15vw, 120px);
+            height: clamp(80px, 15vw, 120px);
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.1s ease;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+        }
+
+        .shooter-right:active {
+            transform: scale(0.9);
+        }
+
+        .shooter-right img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Cohete central */
+        .rocket-center {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(60px, 12vw, 100px);
+            z-index: 10;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+            animation: rocket-float 2s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .rocket-center:active {
+            transform: translateX(-50%) scale(0.9);
+        }
+
+        @keyframes rocket-float {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        /* Elementos que caen */
+        .falling-item {
+            position: absolute;
+            font-size: 35px;
+            pointer-events: none;
+            user-select: none;
+            filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.4));
+            z-index: 4;
+        }
+
+        .falling-item.word {
+            font-family: 'Righteous', cursive;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .falling-item.positive.word {
+            background: rgba(76, 175, 80, 0.95);
+            color: white;
+            border: 3px solid #4CAF50;
+        }
+
+        .falling-item.negative.word {
+            background: rgba(244, 67, 54, 0.95);
+            color: white;
+            border: 3px solid #F44336;
+        }
+
+        .falling-item.image {
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Bala/Proyectil */
+        .bullet {
+            position: absolute;
+            font-size: 30px;
+            z-index: 5;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+        }
+
+        /* Explosión */
+        .explosion {
+            position: absolute;
+            font-size: 50px;
+            z-index: 6;
+            pointer-events: none;
+            animation: explosion-anim 0.5s ease-out forwards;
+        }
+
+        @keyframes explosion-anim {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        /* Modal de bienvenida */
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .welcome-modal.hidden {
+            display: none;
         }
 
         .welcome-modal h2 {
-          font-size: clamp(2.5rem, 14vw, 5rem);
-          padding: 0 15px;
-          line-height: 1.3;
-          width: 100%;
-          text-align: center;
+            font-family: 'Titan One', cursive;
+            font-size: clamp(2.5rem, 10vw, 5rem);
+            color: #F04E85;
+            text-shadow: 0 0 30px rgba(240, 78, 133, 0.8);
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .welcome-modal .instructions {
+            font-family: 'Fredoka', sans-serif;
+            font-size: clamp(0.9rem, 3.5vw, 1.2rem);
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            max-width: 600px;
+            line-height: 1.5;
         }
 
         .welcome-modal button {
-          font-size: clamp(1.3rem, 7vw, 2rem);
-          padding: 15px 35px;
+            font-family: 'Righteous', cursive;
+            font-size: clamp(1.3rem, 5vw, 2rem);
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #32A9B7, #F04E85);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(240, 78, 133, 0.5);
+            transition: all 0.3s ease;
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        .song-end-modal h2 {
-          font-size: clamp(1.5rem, 9vw, 3rem);
-          padding: 0 10px;
+        .welcome-modal button:hover {
+            transform: scale(1.1);
         }
 
-        .song-end-modal button {
-          font-size: clamp(1rem, 5.5vw, 1.8rem);
-          padding: 15px 30px;
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
-        .finger-pointer {
-          font-size: 50px;
-        }
-      }
-
-      /* Modo landscape en móviles */
-      @media (max-height: 500px) and (orientation: landscape) {
-        .title {
-          padding: 10px 0;
-        }
-
-        .title h1 {
-          font-size: clamp(1.5rem, 8vh, 2.5rem);
-          margin-bottom: 5px;
-        }
-
-        .title p {
-          font-size: clamp(0.8rem, 4vh, 1.2rem);
+        /* Modal de Game Over */
+        .gameover-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
         }
 
-        .elements-container {
-          flex-direction: row;
-          gap: 20px;
+        .gameover-modal.show {
+            display: flex;
         }
 
-        .interactive-element img {
-          width: clamp(100px, 25vw, 150px);
+        .gameover-modal h2 {
+            font-family: 'Titan One', cursive;
+            font-size: clamp(2rem, 8vw, 4rem);
+            margin-bottom: 20px;
+            text-align: center;
         }
 
-        .counter,
-        .coming-soon {
-          padding: 8px 15px;
-          font-size: 0.7rem;
+        .gameover-modal h2.win {
+            color: #4CAF50;
         }
 
-        .welcome-modal h2 {
-          font-size: clamp(2rem, 10vh, 3.5rem);
+        .gameover-modal h2.lose {
+            color: #F44336;
         }
 
-        .welcome-modal button {
-          font-size: clamp(1.2rem, 5vh, 1.8rem);
-          padding: 12px 30px;
+        .gameover-modal .final-score {
+            font-family: 'Titan One', cursive;
+            font-size: clamp(3rem, 12vw, 6rem);
+            color: #FFD700;
+            margin-bottom: 20px;
         }
-      }
 
-      /* Efecto de onda al tocar */
-      .ripple {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.6);
-        transform: scale(0);
-        animation: ripple-animation 0.6s ease-out;
-        pointer-events: none;
-      }
-
-      @keyframes ripple-animation {
-        to {
-          transform: scale(4);
-          opacity: 0;
+        .gameover-modal .message {
+            font-family: 'Righteous', cursive;
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            max-width: 600px;
+            line-height: 1.4;
         }
-      }
+
+        .gameover-modal .rabbit-animated {
+            font-size: clamp(3rem, 10vw, 5rem);
+            animation: bounce-rabbit 1s ease-in-out infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes bounce-rabbit {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .gameover-modal .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .gameover-modal button {
+            font-family: 'Fredoka', sans-serif;
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gameover-modal .share-btn {
+            background: #25D366;
+            box-shadow: 0 5px 20px rgba(37, 211, 102, 0.5);
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
+            padding: 20px 45px;
+        }
+
+        .gameover-modal .replay-btn {
+            background: #F04E85;
+            box-shadow: 0 5px 20px rgba(240, 78, 133, 0.5);
+        }
+
+        .gameover-modal button:hover {
+            transform: scale(1.1);
+        }
+
+        /* Countdown */
+        .countdown {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Titan One', cursive;
+            font-size: clamp(4rem, 15vw, 8rem);
+            color: #F04E85;
+            text-shadow: 0 0 30px rgba(240, 78, 133, 0.8);
+            z-index: 999;
+            animation: countdown-pulse 1s ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes countdown-pulse {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+
+        /* Dedo indicador */
+        .finger-indicator {
+            position: fixed;
+            font-size: 60px;
+            z-index: 999;
+            pointer-events: none;
+            animation: finger-tap 1.5s ease-in-out infinite;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
+        }
+
+        @keyframes finger-tap {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(0.9) translateY(10px); }
+        }
+
+        /* Texto de instrucción */
+        .instruction-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Righteous', cursive;
+            font-size: clamp(1.5rem, 6vw, 3rem);
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border-radius: 20px;
+            z-index: 998;
+            pointer-events: none;
+            text-align: center;
+            animation: fade-in-out 3s ease-in-out;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fade-in-out {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .shooter-left, .shooter-right {
+                width: clamp(70px, 18vw, 100px);
+                height: clamp(70px, 18vw, 100px);
+                bottom: 15px;
+            }
+
+            .shooter-left { left: 15px; }
+            .shooter-right { right: 15px; }
+
+            .rocket-center {
+                font-size: clamp(50px, 15vw, 80px);
+            }
+
+            .falling-item {
+                font-size: 30px;
+            }
+
+            .falling-item.word {
+                font-size: 16px;
+                padding: 6px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .shooter-left, .shooter-right {
+                width: clamp(60px, 20vw, 80px);
+                height: clamp(60px, 20vw, 80px);
+                bottom: 10px;
+            }
+
+            .shooter-left { left: 10px; }
+            .shooter-right { right: 10px; }
+
+            .logo {
+                top: 15px;
+                font-size: clamp(2rem, 12vw, 3rem);
+            }
+
+            .score-display {
+                top: 15px;
+                right: 15px;
+            }
+        }
+
+        @media (max-height: 500px) and (orientation: landscape) {
+            .shooter-left, .shooter-right {
+                width: 60px;
+                height: 60px;
+            }
+
+            .rocket-center {
+                font-size: 50px;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+        }
     </style>
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-VHTS4Y8GQ8"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-
-      gtag("config", "G-VHTS4Y8GQ8");
-    </script>
-  </head>
-  <body>
+</head>
+<body>
     <!-- Video de cámara frontal -->
     <video id="video" autoplay playsinline></video>
-
+    
     <!-- Overlay -->
     <div class="overlay"></div>
 
-    <!-- Mensaje de error -->
-    <div class="error-message" id="errorMessage">
-      <h3>📷 No se pudo acceder a la cámara</h3>
-      <p>
-        Por favor, permite el acceso a la cámara para disfrutar la experiencia
-        completa
-      </p>
+    <!-- Cronómetro -->
+    <div class="timer-display">
+        <div class="timer-label">⏱️ TIEMPO</div>
+        <div class="timer-value" id="timerDisplay">0:00</div>
     </div>
 
-    <!-- Modal de bienvenida "Muy pronto" -->
+    <!-- Logo JS -->
+    <div class="logo">
+        <span class="j">J</span><span class="s">S</span>
+    </div>
+
+    <!-- Puntuación y Nivel -->
+    <div class="score-display">
+        <div class="score-label">PUNTUACIÓN</div>
+        <div class="score-value" id="scoreDisplay">100</div>
+        <div class="level-display">NIVEL <span id="levelDisplay">1</span></div>
+    </div>
+
+    <!-- Área de juego -->
+    <div id="gameArea"></div>
+
+    <!-- Shooters -->
+    <div class="shooter-left" id="shooterLeft">
+        <img src="jicara.png" alt="Pozol">
+    </div>
+
+    <div class="rocket-center" id="rocketCenter">😠</div>
+
+    <div class="shooter-right" id="shooterRight">
+        <img src="conejo.png" alt="Conejo">
+    </div>
+
+    <!-- Modal de bienvenida -->
     <div class="welcome-modal" id="welcomeModal">
-      <h2>🐰 MUY PRONTO 🐰</h2>
-      <button id="startExperience">¡COMENZAR!</button>
-    </div>
-
-    <!-- Modal final de canción -->
-    <div class="song-end-modal" id="songEndModal">
-      <h2>🎵 ¿Te gustó la canción? 🎵</h2>
-      <button id="replayButton">🔄 Reproducir nuevamente</button>
-    </div>
-
-    <!-- Audio player (oculto) -->
-    <audio id="campaignSong" style="display: none">
-      <!-- Aquí va tu canción generada con Suno AI -->
-      <!-- Descarga tu canción y reemplaza la ruta -->
-      <source src="cancion-giovani.mp3" type="audio/mpeg" />
-    </audio>
-
-    <!-- Audio de efectos de sonido -->
-    <audio id="conejSound" style="display: none" preload="auto">
-      <source src="conejo-sound.mp3" type="audio/mpeg" />
-    </audio>
-    <audio id="jicaraSound" style="display: none" preload="auto">
-      <source src="jicara-sound.mp3" type="audio/mpeg" />
-    </audio>
-
-    <!-- Contenedor principal -->
-    <div class="container">
-      <!-- Título -->
-      <div class="title">
-        <h1>
-          <span style="color: #32a9b7">J</span
-          ><span style="color: #bd474a">OVANI</span>
-          <span style="color: #f04e85">S</span
-          ><span style="color: #bd474a">ALAZAR</span>
-        </h1>
-        <p>🐰 El Pozol del Pueblo 🐰</p>
-      </div>
-
-      <!-- Elementos interactivos -->
-      <div class="elements-container">
-        <div class="interactive-element" id="jicara">
-          <img src="jicara.png" alt="Jícara de Pozol" />
+        <h2>🐰 DEFIENDE EL POZOL 🥤</h2>
+        <div class="instructions">
+            <p>⏱️ <strong>¿Cuánto podrás defender el pozol en UN MINUTO?</strong></p>
+            <p>🎯 <strong>3 CARRILES:</strong> Izquierda y Derecha = BUENO 🟢 | Centro = MALO 🔴</p>
+            <p>✅ <strong>Solo dispara al CENTRO</strong> (palabras rojas y emoticons malos)</p>
+            <p>❌ <strong>NO dispares a los lados</strong> (déjalos caer sin tocar)</p>
+            <p>🥤😠🐰 Los 3 botones disparan hacia el centro</p>
         </div>
-        <div class="interactive-element" id="conejo">
-          <img src="conejo.png" alt="Conejo" />
-        </div>
-      </div>
+        <button id="startButton">¡JUGAR! 🎮</button>
     </div>
 
-    <!-- Contador de interacciones -->
-    <div class="counter">🐰 Apoyos: <span id="count">0</span></div>
+    <!-- Modal de Game Over -->
+    <div class="gameover-modal" id="gameoverModal">
+        <h2 id="gameoverTitle">¡JUEGO TERMINADO!</h2>
+        <div class="final-score" id="finalScore">0</div>
+        <div class="rabbit-animated">🐰</div>
+        <div class="message" id="gameoverMessage"></div>
+        <div class="buttons" id="gameoverButtons"></div>
+    </div>
 
-    <!-- Mensaje próximamente -->
-    <div class="coming-soon">¡PRÓXIMAMENTE! 🚀</div>
+    <!-- Audio -->
+    <audio id="campaignSong" style="display: none;">
+        <source src="cancion-giovani.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="shootSound" style="display: none;" preload="auto">
+        <source src="shoot-sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="hitSound" style="display: none;" preload="auto">
+        <source src="hit-sound.mp3" type="audio/mpeg">
+    </audio>
 
-    <!-- Scripts -->
     <script>
-      // Variables globales
-      let count = 0;
-      let cameraActive = false;
-      let hasStarted = false;
-      let fingerPointers = [];
-      let floatingRabbits = [];
-      const video = document.getElementById("video");
-      const jicara = document.getElementById("jicara");
-      const conejo = document.getElementById("conejo");
-      const countDisplay = document.getElementById("count");
-      const errorMessage = document.getElementById("errorMessage");
-      const welcomeModal = document.getElementById("welcomeModal");
-      const songEndModal = document.getElementById("songEndModal");
-      const campaignSong = document.getElementById("campaignSong");
-      const conejSound = document.getElementById("conejSound");
-      const jicaraSound = document.getElementById("jicaraSound");
-      const startButton = document.getElementById("startExperience");
-      const replayButton = document.getElementById("replayButton");
+        // Variables globales
+        let score = 100; // Empezar con 100 puntos
+        let level = 1;
+        let gameActive = false;
+        let cameraActive = false;
+        let gameSpeed = 6000; // Velocidad inicial de caída
+        let spawnInterval = 2500;
+        let difficultyTimer;
+        let spawnTimerLeft;
+        let spawnTimerCenter;
+        let spawnTimerRight;
+        let gameTimer; // Timer del cronómetro
+        let gameSeconds = 0; // Segundos transcurridos
+        let gameTimeLimit = 60; // Límite de 1 minuto (60 segundos)
+        
+        const video = document.getElementById('video');
+        const gameArea = document.getElementById('gameArea');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const welcomeModal = document.getElementById('welcomeModal');
+        const gameoverModal = document.getElementById('gameoverModal');
+        const gameoverTitle = document.getElementById('gameoverTitle');
+        const finalScore = document.getElementById('finalScore');
+        const gameoverMessage = document.getElementById('gameoverMessage');
+        const gameoverButtons = document.getElementById('gameoverButtons');
+        const startButton = document.getElementById('startButton');
+        const shooterLeft = document.getElementById('shooterLeft');
+        const shooterRight = document.getElementById('shooterRight');
+        const rocketCenter = document.getElementById('rocketCenter');
+        const campaignSong = document.getElementById('campaignSong');
+        const shootSound = document.getElementById('shootSound');
+        const hitSound = document.getElementById('hitSound');
 
-      // Colores de la campaña
-      const colors = ["#F04E85", "#32A9B7", "#FFFFFF"];
-
-      // Crear conejos flotantes aleatorios en la pantalla
-      function createFloatingRabbit() {
-        const rabbit = document.createElement("div");
-        rabbit.textContent = ["🐰", "🐇"][Math.floor(Math.random() * 2)];
-        rabbit.style.position = "fixed";
-        rabbit.style.fontSize = Math.random() * 40 + 30 + "px";
-        rabbit.style.zIndex = "2";
-        rabbit.style.pointerEvents = "none";
-        rabbit.style.userSelect = "none";
-        rabbit.style.opacity = "0.7";
-
-        // Posición inicial aleatoria en los bordes
-        const side = Math.floor(Math.random() * 4);
-        if (side === 0) {
-          // Arriba
-          rabbit.style.left = Math.random() * 100 + "%";
-          rabbit.style.top = "-50px";
-        } else if (side === 1) {
-          // Derecha
-          rabbit.style.left = "calc(100vw + 50px)";
-          rabbit.style.top = Math.random() * 100 + "%";
-        } else if (side === 2) {
-          // Abajo
-          rabbit.style.left = Math.random() * 100 + "%";
-          rabbit.style.top = "calc(100vh + 50px)";
-        } else {
-          // Izquierda
-          rabbit.style.left = "-50px";
-          rabbit.style.top = Math.random() * 100 + "%";
-        }
-
-        document.body.appendChild(rabbit);
-        floatingRabbits.push(rabbit);
-
-        // Destino aleatorio
-        const destX = Math.random() * window.innerWidth;
-        const destY = Math.random() * window.innerHeight;
-        const duration = Math.random() * 5000 + 5000; // 5-10 segundos
-
-        rabbit.style.transition = `all ${duration}ms linear`;
-
-        setTimeout(() => {
-          rabbit.style.left = destX + "px";
-          rabbit.style.top = destY + "px";
-          rabbit.style.transform = `rotate(${Math.random() * 360}deg)`;
-        }, 10);
-
-        // Remover después de la animación
-        setTimeout(() => {
-          rabbit.remove();
-          floatingRabbits = floatingRabbits.filter((r) => r !== rabbit);
-        }, duration + 1000);
-      }
-
-      // Iniciar conejos flotantes aleatorios
-      function startFloatingRabbits() {
-        // Crear conejo cada 2-4 segundos
-        setInterval(() => {
-          if (hasStarted) {
-            createFloatingRabbit();
-          }
-        }, Math.random() * 2000 + 2000);
-      }
-
-      // Crear dedos indicadores
-      function createFingerPointers() {
-        // Remover dedos existentes
-        fingerPointers.forEach((finger) => finger.remove());
-        fingerPointers = [];
-
-        // Dedo apuntando a la jícara
-        const jicaraRect = jicara.getBoundingClientRect();
-        const fingerJicara = document.createElement("div");
-        fingerJicara.className = "finger-pointer";
-        fingerJicara.textContent = "👉";
-        fingerJicara.style.left = jicaraRect.left - 100 + "px";
-        fingerJicara.style.top =
-          jicaraRect.top + jicaraRect.height / 2 - 40 + "px";
-        document.body.appendChild(fingerJicara);
-        fingerPointers.push(fingerJicara);
-
-        // Dedo apuntando al conejo
-        const conejoRect = conejo.getBoundingClientRect();
-        const fingerConejo = document.createElement("div");
-        fingerConejo.className = "finger-pointer";
-        fingerConejo.textContent = "👈";
-        fingerConejo.style.left = conejoRect.right + 20 + "px";
-        fingerConejo.style.top =
-          conejoRect.top + conejoRect.height / 2 - 40 + "px";
-        document.body.appendChild(fingerConejo);
-        fingerPointers.push(fingerConejo);
-
-        // Remover dedos después de 10 segundos
-        setTimeout(() => {
-          fingerPointers.forEach((finger) => {
-            finger.style.transition = "opacity 1s ease";
-            finger.style.opacity = "0";
-            setTimeout(() => finger.remove(), 1000);
-          });
-          fingerPointers = [];
-        }, 10000);
-      }
-
-      // Agregar animación de llamado de atención a elementos
-      function startCallAttention() {
-        jicara.classList.add("call-attention");
-        conejo.classList.add("call-attention");
-      }
-
-      // Remover animación de llamado de atención
-      function stopCallAttention() {
-        jicara.classList.remove("call-attention");
-        conejo.classList.remove("call-attention");
-      }
-
-      // Iniciar experiencia desde el modal
-      startButton.addEventListener("click", async () => {
-        // Ocultar modal de bienvenida
-        welcomeModal.classList.add("hidden");
-        hasStarted = true;
-
-        // Iniciar cámara
-        await startCamera();
-
-        // Iniciar conejos flotantes
-        startFloatingRabbits();
-
-        // Reproducir canción
-        try {
-          await campaignSong.play();
-
-          // Google Analytics
-          gtag("event", "song_play", {
-            event_category: "audio",
-            event_label: "Campaign Song Started",
-          });
-        } catch (err) {
-          console.log("No se pudo reproducir la canción automáticamente:", err);
-        }
-
-        // Mostrar dedos indicadores después de 2 segundos
-        setTimeout(() => {
-          createFingerPointers();
-          startCallAttention();
-        }, 2000);
-      });
-
-      // Evento cuando termina la canción
-      campaignSong.addEventListener("ended", () => {
-        // Detener animaciones de llamado de atención
-        stopCallAttention();
-
-        // Mostrar modal de fin de canción
-        songEndModal.classList.add("show");
-
-        // Reactivar animaciones de llamado de atención
-        setTimeout(() => {
-          startCallAttention();
-        }, 1000);
-
-        // Google Analytics
-        gtag("event", "song_ended", {
-          event_category: "audio",
-          event_label: "Campaign Song Ended",
-        });
-      });
-
-      // Botón para reproducir nuevamente
-      replayButton.addEventListener("click", () => {
-        songEndModal.classList.remove("show");
-        campaignSong.currentTime = 0;
-        campaignSong.play();
-
-        // Mostrar dedos nuevamente
-        setTimeout(() => {
-          createFingerPointers();
-        }, 2000);
-
-        // Google Analytics
-        gtag("event", "song_replay", {
-          event_category: "audio",
-          event_label: "Campaign Song Replayed",
-        });
-      });
-
-      // Iniciar cámara
-      async function startCamera() {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "user" },
-            audio: false,
-          });
-          video.srcObject = stream;
-          cameraActive = true;
-          errorMessage.style.display = "none";
-
-          // Google Analytics - Evento de cámara activada
-          gtag("event", "camera_activated", {
-            event_category: "interaction",
-            event_label: "Camera Started",
-          });
-        } catch (err) {
-          console.error("Error al acceder a la cámara:", err);
-          errorMessage.style.display = "block";
-          setTimeout(() => {
-            errorMessage.style.display = "none";
-          }, 3000);
-        }
-      }
-
-      // Crear partículas/confeti
-      function createParticles(x, y, element) {
-        for (let i = 0; i < 30; i++) {
-          const particle = document.createElement("div");
-          particle.className = "particle";
-          particle.style.left = x + "px";
-          particle.style.top = y + "px";
-          particle.style.background =
-            colors[Math.floor(Math.random() * colors.length)];
-          particle.style.width = Math.random() * 20 + 10 + "px";
-          particle.style.height = particle.style.width;
-
-          // Algunas partículas son estrellas
-          if (Math.random() > 0.6) {
-            particle.textContent = ["⭐", "✨", "💫", "🌟"][
-              Math.floor(Math.random() * 4)
-            ];
-            particle.style.background = "transparent";
-            particle.style.fontSize = particle.style.width;
-          }
-
-          const angle = Math.random() * 360 * (Math.PI / 180);
-          const velocity = Math.random() * 150 + 100;
-          const tx = Math.cos(angle) * velocity;
-          const ty = Math.sin(angle) * velocity;
-
-          particle.style.setProperty("--tx", tx + "px");
-          particle.style.setProperty("--ty", ty + "px");
-
-          document.body.appendChild(particle);
-
-          setTimeout(() => particle.remove(), 2000);
-        }
-      }
-
-      // Crear efecto de onda
-      function createRipple(e, element) {
-        const ripple = document.createElement("span");
-        ripple.className = "ripple";
-        const rect = element.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height);
-        const x = e.clientX - rect.left - size / 2;
-        const y = e.clientY - rect.top - size / 2;
-
-        ripple.style.width = ripple.style.height = size + "px";
-        ripple.style.left = x + "px";
-        ripple.style.top = y + "px";
-
-        element.appendChild(ripple);
-
-        setTimeout(() => ripple.remove(), 600);
-      }
-
-      // Animaciones aleatorias
-      const animations = ["bounce", "spin", "shake"];
-
-      function getRandomAnimation() {
-        return animations[Math.floor(Math.random() * animations.length)];
-      }
-
-      // Crear burbujas de pozol
-      function createPozolBubbles(x, y) {
-        const pozolEmojis = ["🐰", "🐇", "✨", "🐰", "🐇"];
-        for (let i = 0; i < 8; i++) {
-          const bubble = document.createElement("div");
-          bubble.textContent =
-            pozolEmojis[Math.floor(Math.random() * pozolEmojis.length)];
-          bubble.style.position = "fixed";
-          bubble.style.left = x + "px";
-          bubble.style.top = y + "px";
-          bubble.style.fontSize = Math.random() * 30 + 20 + "px";
-          bubble.style.zIndex = "999";
-          bubble.style.pointerEvents = "none";
-          bubble.style.userSelect = "none";
-
-          const angle = Math.random() * 360 * (Math.PI / 180);
-          const distance = Math.random() * 150 + 100;
-          const tx = Math.cos(angle) * distance;
-          const ty = Math.sin(angle) * distance - 200; // Flotan hacia arriba
-
-          bubble.style.transition =
-            "all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-
-          document.body.appendChild(bubble);
-
-          setTimeout(() => {
-            bubble.style.transform = `translate(${tx}px, ${ty}px) rotate(${
-              Math.random() * 360
-            }deg) scale(0)`;
-            bubble.style.opacity = "0";
-          }, 10);
-
-          setTimeout(() => bubble.remove(), 1500);
-        }
-      }
-
-      // Interacción con jícara
-      jicara.addEventListener("click", (e) => {
-        count++;
-        countDisplay.textContent = count;
-
-        // Reproducir sonido de jícara
-        jicaraSound.currentTime = 0; // Reiniciar desde el inicio
-        jicaraSound
-          .play()
-          .catch((err) => console.log("No se pudo reproducir sonido:", err));
-
-        // Remover dedos indicadores si existen
-        fingerPointers.forEach((finger) => finger.remove());
-        fingerPointers = [];
-
-        // Crear efecto de onda
-        createRipple(e, jicara);
-
-        // Animación aleatoria
-        const animation = getRandomAnimation();
-        jicara.classList.add(animation);
-        setTimeout(() => jicara.classList.remove(animation), 800);
-
-        // Partículas de colores
-        createParticles(e.clientX, e.clientY, jicara);
-
-        // Burbujas de pozol
-        createPozolBubbles(e.clientX, e.clientY);
-
-        // ¡CONEJOS TAMBIÉN EN LA JÍCARA!
-        createRabbitExplosion(e.clientX, e.clientY);
-
-        // Vibración (si está disponible)
-        if ("vibrate" in navigator) {
-          navigator.vibrate([50, 30, 50, 30, 50]);
-        }
-
-        // Google Analytics
-        gtag("event", "click", {
-          event_category: "interaction",
-          event_label: "Jícara Click",
-          value: count,
-        });
-      });
-
-      // Crear explosión de conejos (MEJORADA - MUCHOS MÁS CONEJOS)
-      function createRabbitExplosion(x, y) {
-        const rabbitEmojis = [
-          "🐰",
-          "🐇",
-          "🐰",
-          "🐇",
-          "🐰",
-          "🐇",
-          "🥕",
-          "🌾",
-          "⚡",
-          "💨",
-          "✨",
-          "💫",
-          "⭐",
+        // Elementos positivos (caen en los lados)
+        const positiveItems = [
+            { type: 'emoji', content: '🐰', points: 0 },
+            { type: 'emoji', content: '🐇', points: 0 },
+            { type: 'emoji', content: '🥤', points: 0 },
+            { type: 'emoji', content: '❤️', points: 0 },
+            { type: 'emoji', content: '✨', points: 0 },
+            { type: 'emoji', content: '🥕', points: 0 },
+            { type: 'emoji', content: '💖', points: 0 },
+            { type: 'emoji', content: '⭐', points: 0 },
+            { type: 'word', content: 'HONESTIDAD', points: 0 },
+            { type: 'word', content: 'COMPROMISO', points: 0 },
+            { type: 'word', content: 'AYUDAR', points: 0 },
+            { type: 'word', content: 'UNIDAD', points: 0 },
+            { type: 'word', content: 'LEALTAD', points: 0 },
+            { type: 'word', content: 'RESPETO', points: 0 }
         ];
 
-        // Crear MUCHOS más conejos saltando (aumentado de 15 a 40)
-        for (let i = 0; i < 40; i++) {
-          const rabbit = document.createElement("div");
-          rabbit.textContent =
-            rabbitEmojis[Math.floor(Math.random() * rabbitEmojis.length)];
-          rabbit.style.position = "fixed";
-          rabbit.style.left = x + "px";
-          rabbit.style.top = y + "px";
-          rabbit.style.fontSize = Math.random() * 50 + 30 + "px";
-          rabbit.style.zIndex = "999";
-          rabbit.style.pointerEvents = "none";
-          rabbit.style.userSelect = "none";
+        // Elementos negativos (caen en el centro)
+        const negativeItems = [
+            { type: 'emoji', content: '💩', points: -15 },
+            { type: 'emoji', content: '😈', points: -15 },
+            { type: 'emoji', content: '👎', points: -10 },
+            { type: 'emoji', content: '❌', points: -10 },
+            { type: 'emoji', content: '💔', points: -10 },
+            { type: 'emoji', content: '🚫', points: -10 },
+            { type: 'word', content: 'ROBAR', points: -20 },
+            { type: 'word', content: 'TRAICIÓN', points: -20 },
+            { type: 'word', content: 'FALSEDAD', points: -20 },
+            { type: 'word', content: 'MENTIR', points: -15 },
+            { type: 'word', content: 'ENGAÑAR', points: -15 },
+            { type: 'word', content: 'CORRUPCIÓN', points: -25 }
+        ];
 
-          const angle = Math.random() * 360 * (Math.PI / 180);
-          const distance = Math.random() * 300 + 100;
-          const tx = Math.cos(angle) * distance;
-          const ty = Math.sin(angle) * distance - 150;
-
-          // Animación de salto con rebote
-          rabbit.style.transition =
-            "all 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)";
-
-          document.body.appendChild(rabbit);
-
-          // Hacer que salten
-          setTimeout(() => {
-            rabbit.style.transform = `translate(${tx}px, ${ty}px) rotate(${
-              Math.random() * 1080 - 540
-            }deg) scale(${Math.random() * 1 + 0.3})`;
-            rabbit.style.opacity = "0";
-          }, 10);
-
-          setTimeout(() => rabbit.remove(), 1500);
+        // Iniciar cámara
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' },
+                    audio: false
+                });
+                video.srcObject = stream;
+                cameraActive = true;
+            } catch (err) {
+                console.error('Error al acceder a la cámara:', err);
+            }
         }
 
-        // Agregar efecto de estela de velocidad más intenso
-        createSpeedLines(x, y);
+        // Crear elemento que cae
+        function createFallingItem(lane) {
+            if (!gameActive) return;
 
-        // Agregar explosión de estrellas
-        createStarBurst(x, y);
-      }
+            let items, isNegative;
+            let xPosition;
 
-      // Crear explosión de estrellas
-      function createStarBurst(x, y) {
-        const stars = ["⭐", "✨", "💫", "🌟", "⚡"];
-        for (let i = 0; i < 20; i++) {
-          const star = document.createElement("div");
-          star.textContent = stars[Math.floor(Math.random() * stars.length)];
-          star.style.position = "fixed";
-          star.style.left = x + "px";
-          star.style.top = y + "px";
-          star.style.fontSize = Math.random() * 40 + 20 + "px";
-          star.style.zIndex = "1000";
-          star.style.pointerEvents = "none";
+            // Obtener las posiciones EXACTAS de los shooters del DOM
+            const leftShooterRect = shooterLeft.getBoundingClientRect();
+            const centerShooterRect = rocketCenter.getBoundingClientRect();
+            const rightShooterRect = shooterRight.getBoundingClientRect();
 
-          const angle = Math.random() * 360 * (Math.PI / 180);
-          const distance = Math.random() * 200 + 50;
-          const tx = Math.cos(angle) * distance;
-          const ty = Math.sin(angle) * distance;
+            // Calcular el centro de cada shooter
+            const leftShooterCenter = leftShooterRect.left + (leftShooterRect.width / 2);
+            const centerShooterCenter = centerShooterRect.left + (centerShooterRect.width / 2);
+            const rightShooterCenter = rightShooterRect.left + (rightShooterRect.width / 2);
 
-          star.style.transition = "all 1s ease-out";
-          document.body.appendChild(star);
+            if (lane === 'left') {
+                // Lado izquierdo - POSITIVOS
+                // Caen en una línea vertical desde el pozol con pequeña variación
+                items = positiveItems;
+                isNegative = false;
+                const variance = 30; // ±30 píxeles de variación
+                xPosition = leftShooterCenter - variance + Math.random() * (variance * 2);
+            } else if (lane === 'right') {
+                // Lado derecho - POSITIVOS
+                // Caen en una línea vertical desde el conejo con pequeña variación
+                items = positiveItems;
+                isNegative = false;
+                const variance = 30;
+                xPosition = rightShooterCenter - variance + Math.random() * (variance * 2);
+            } else {
+                // Centro - NEGATIVOS
+                // Caen en una línea vertical desde el cohete con pequeña variación
+                items = negativeItems;
+                isNegative = true;
+                const variance = 40; // Un poco más de rango en el centro
+                xPosition = centerShooterCenter - variance + Math.random() * (variance * 2);
+            }
 
-          setTimeout(() => {
-            star.style.transform = `translate(${tx}px, ${ty}px) rotate(${
-              Math.random() * 360
-            }deg) scale(2)`;
-            star.style.opacity = "0";
-          }, 10);
+            const item = items[Math.floor(Math.random() * items.length)];
 
-          setTimeout(() => star.remove(), 1000);
-        }
-      }
+            const element = document.createElement('div');
+            element.className = `falling-item ${isNegative ? 'negative' : 'positive'} ${item.type}`;
+            
+            if (item.type === 'word') {
+                element.textContent = item.content;
+                element.classList.add('word');
+            } else {
+                element.textContent = item.content;
+            }
 
-      // Crear líneas de velocidad (efecto de movimiento rápido)
-      function createSpeedLines(x, y) {
-        for (let i = 0; i < 6; i++) {
-          const line = document.createElement("div");
-          line.style.position = "fixed";
-          line.style.left = x + "px";
-          line.style.top = y + Math.random() * 100 - 50 + "px";
-          line.style.width = Math.random() * 100 + 50 + "px";
-          line.style.height = "3px";
-          line.style.background = "rgba(240, 78, 133, 0.8)";
-          line.style.borderRadius = "2px";
-          line.style.zIndex = "998";
-          line.style.pointerEvents = "none";
-          line.style.transform = "translateX(-100px)";
-          line.style.transition = "all 0.4s ease-out";
+            element.dataset.negative = isNegative;
+            element.dataset.points = item.points;
+            element.dataset.destroyed = 'false';
 
-          document.body.appendChild(line);
+            // Centrar el elemento en su posición X (ajustar por el ancho del elemento)
+            element.style.left = (xPosition - 20) + 'px'; // -20 para centrar aprox
 
-          setTimeout(() => {
-            line.style.transform = "translateX(300px)";
-            line.style.opacity = "0";
-          }, 10);
+            element.style.top = '-100px';
 
-          setTimeout(() => line.remove(), 400);
-        }
-      }
+            gameArea.appendChild(element);
 
-      // Interacción con conejo
-      conejo.addEventListener("click", (e) => {
-        count++;
-        countDisplay.textContent = count;
+            // Animación de caída
+            let position = -100;
+            const totalDistance = window.innerHeight + 100;
+            const pixelsPerFrame = totalDistance / (gameSpeed / (1000 / 60));
+            const fallInterval = setInterval(() => {
+                if (!gameActive) {
+                    clearInterval(fallInterval);
+                    element.remove();
+                    return;
+                }
 
-        // Reproducir sonido de conejo
-        conejSound.currentTime = 0; // Reiniciar desde el inicio
-        conejSound
-          .play()
-          .catch((err) => console.log("No se pudo reproducir sonido:", err));
+                position += pixelsPerFrame;
+                element.style.top = position + 'px';
 
-        // Remover dedos indicadores si existen
-        fingerPointers.forEach((finger) => finger.remove());
-        fingerPointers = [];
+                // Si llegó al fondo
+                if (position > window.innerHeight) {
+                    clearInterval(fallInterval);
+                    
+                    // Si era negativo y no fue destruido, resta puntos
+                    if (isNegative && element.dataset.destroyed === 'false') {
+                        updateScore(item.points);
+                    }
+                    // Si era positivo y no fue destruido, no pasa nada (correcto)
+                    
+                    element.remove();
+                }
+            }, 1000 / 60);
 
-        // Crear efecto de onda
-        createRipple(e, conejo);
-
-        // Animación aleatoria
-        const animation = getRandomAnimation();
-        conejo.classList.add(animation);
-        setTimeout(() => conejo.classList.remove(animation), 800);
-
-        // Partículas de colores
-        createParticles(e.clientX, e.clientY, conejo);
-
-        // ¡EXPLOSIÓN DE CONEJOS!
-        createRabbitExplosion(e.clientX, e.clientY);
-
-        // Vibración más intensa
-        if ("vibrate" in navigator) {
-          navigator.vibrate([50, 30, 50, 30, 50]);
+            // Guardar el interval en el elemento
+            element.fallInterval = fallInterval;
         }
 
-        // Google Analytics
-        gtag("event", "click", {
-          event_category: "interaction",
-          event_label: "Conejo Click",
-          value: count,
+        // Disparar bala
+        function shoot(fromSide) {
+            if (!gameActive) return;
+
+            playSound('shoot');
+
+            const bullet = document.createElement('div');
+            bullet.className = 'bullet';
+            
+            let shooterRect;
+            if (fromSide === 'left') {
+                bullet.textContent = '💧';
+                shooterRect = shooterLeft.getBoundingClientRect();
+            } else if (fromSide === 'right') {
+                bullet.textContent = '🥕';
+                shooterRect = shooterRight.getBoundingClientRect();
+            } else {
+                // Disparo desde el centro (cohete)
+                bullet.textContent = '🔥';
+                shooterRect = rocketCenter.getBoundingClientRect();
+            }
+            
+            bullet.style.left = (shooterRect.left + shooterRect.width / 2) + 'px';
+            bullet.style.top = (shooterRect.top - 20) + 'px';
+
+            gameArea.appendChild(bullet);
+
+            // Animación de bala hacia arriba
+            let bulletY = shooterRect.top - 20;
+            const bulletSpeed = 15; // Píxeles por frame
+            
+            const bulletInterval = setInterval(() => {
+                if (!gameActive) {
+                    clearInterval(bulletInterval);
+                    bullet.remove();
+                    return;
+                }
+
+                bulletY -= bulletSpeed;
+                bullet.style.top = bulletY + 'px';
+
+                // Verificar colisión con elementos negativos
+                checkCollision(bullet, bulletInterval);
+
+                // Si salió de la pantalla
+                if (bulletY < -50) {
+                    clearInterval(bulletInterval);
+                    bullet.remove();
+                }
+            }, 1000 / 60);
+        }
+
+        // Verificar colisión
+        function checkCollision(bullet, bulletInterval) {
+            const bulletRect = bullet.getBoundingClientRect();
+            // Detectar colisión con TODOS los elementos (positivos y negativos)
+            const items = document.querySelectorAll('.falling-item');
+
+            items.forEach(item => {
+                if (item.dataset.destroyed === 'true') return;
+
+                const itemRect = item.getBoundingClientRect();
+
+                // Margen de tolerancia AMPLIO para facilitar el impacto (40px extra)
+                const tolerance = 40;
+
+                // Detección de colisión con tolerancia generosa
+                if (bulletRect.left < itemRect.right + tolerance &&
+                    bulletRect.right > itemRect.left - tolerance &&
+                    bulletRect.top < itemRect.bottom + tolerance &&
+                    bulletRect.bottom > itemRect.top - tolerance) {
+                    
+                    // ¡Colisión!
+                    item.dataset.destroyed = 'true';
+                    
+                    // Hacer invisible inmediatamente
+                    item.style.opacity = '0';
+                    item.style.visibility = 'hidden';
+                    
+                    // Detener caída del item
+                    if (item.fallInterval) {
+                        clearInterval(item.fallInterval);
+                    }
+
+                    // Crear explosión
+                    createExplosion(itemRect.left + itemRect.width / 2, itemRect.top + itemRect.height / 2);
+
+                    // Verificar si es negativo o positivo
+                    const isNegative = item.dataset.negative === 'true';
+                    const points = parseInt(item.dataset.points);
+                    
+                    if (isNegative) {
+                        // Destruir negativo suma puntos
+                        updateScore(Math.abs(points));
+                    } else {
+                        // Destruir positivo resta puntos
+                        updateScore(-10); // Penalización por destruir elementos buenos
+                    }
+
+                    // Sonido de impacto
+                    playSound('hit');
+
+                    // Remover item del DOM
+                    setTimeout(() => item.remove(), 10);
+
+                    // Remover bala
+                    clearInterval(bulletInterval);
+                    bullet.remove();
+                }
+            });
+        }
+
+        // Crear explosión
+        function createExplosion(x, y) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.textContent = '💥';
+            explosion.style.left = x + 'px';
+            explosion.style.top = y + 'px';
+            gameArea.appendChild(explosion);
+
+            setTimeout(() => explosion.remove(), 500);
+        }
+
+        // Actualizar puntuación
+        function updateScore(points) {
+            score += points;
+            if (score < 0) score = 0;
+            scoreDisplay.textContent = score;
+
+            // Verificar game over
+            if (score <= 0) {
+                endGame(false);
+            }
+
+            // Actualizar nivel cada 100 puntos
+            const newLevel = Math.floor(score / 100) + 1;
+            if (newLevel !== level) {
+                level = newLevel;
+                levelDisplay.textContent = level;
+            }
+
+            gtag('event', 'score_update', {
+                'event_category': 'game',
+                'event_label': 'Score',
+                'value': score
+            });
+        }
+
+        // Reproducir sonido
+        function playSound(type) {
+            try {
+                if (type === 'shoot') {
+                    shootSound.currentTime = 0;
+                    shootSound.play().catch(() => {});
+                } else if (type === 'hit') {
+                    hitSound.currentTime = 0;
+                    hitSound.play().catch(() => {});
+                }
+            } catch (err) {}
+        }
+
+        // Actualizar cronómetro
+        function updateTimer() {
+            const minutes = Math.floor(gameSeconds / 60);
+            const seconds = gameSeconds % 60;
+            timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Iniciar cronómetro
+        function startTimer() {
+            gameSeconds = 0;
+            updateTimer();
+            gameTimer = setInterval(() => {
+                gameSeconds++;
+                updateTimer();
+                
+                // Terminar juego después de 1 minuto
+                if (gameSeconds >= gameTimeLimit) {
+                    endGame(true); // Victoria por completar el minuto
+                }
+            }, 1000);
+        }
+
+        // Detener cronómetro
+        function stopTimer() {
+            if (gameTimer) {
+                clearInterval(gameTimer);
+            }
+        }
+
+        // Aumentar dificultad
+        function increaseDifficulty() {
+            difficultyTimer = setInterval(() => {
+                if (gameSpeed > 3000) {
+                    gameSpeed -= 200;
+                }
+                if (spawnInterval > 1500) {
+                    spawnInterval -= 150;
+                    // Reiniciar los 3 timers con nueva velocidad
+                    clearInterval(spawnTimerLeft);
+                    clearInterval(spawnTimerCenter);
+                    clearInterval(spawnTimerRight);
+                    
+                    spawnTimerLeft = setInterval(() => createFallingItem('left'), spawnInterval);
+                    spawnTimerCenter = setInterval(() => createFallingItem('center'), spawnInterval * 0.8);
+                    spawnTimerRight = setInterval(() => createFallingItem('right'), spawnInterval);
+                }
+            }, 20000);
+        }
+
+        // Iniciar juego
+        function startGame() {
+            welcomeModal.classList.add('hidden');
+            gameActive = true;
+            score = 100;
+            level = 1;
+            gameSpeed = 6000;
+            spawnInterval = 2500;
+            scoreDisplay.textContent = '100';
+            levelDisplay.textContent = '1';
+
+            startCamera();
+            campaignSong.play().catch(() => {});
+
+            // Countdown
+            let countdownNum = 3;
+            const countdownElement = document.createElement('div');
+            countdownElement.className = 'countdown';
+            countdownElement.textContent = countdownNum;
+            document.body.appendChild(countdownElement);
+
+            const countdownInterval = setInterval(() => {
+                countdownNum--;
+                if (countdownNum > 0) {
+                    countdownElement.textContent = countdownNum;
+                } else {
+                    countdownElement.textContent = '¡DISPARA!';
+                    clearInterval(countdownInterval);
+                    setTimeout(() => countdownElement.remove(), 1000);
+                }
+            }, 1000);
+
+            // Iniciar spawn después del countdown
+            setTimeout(() => {
+                // Mostrar texto de instrucción
+                const instructionText = document.createElement('div');
+                instructionText.className = 'instruction-text';
+                instructionText.textContent = '👇 Presiona los botones para disparar';
+                document.body.appendChild(instructionText);
+
+                // Crear dedos indicadores (apuntando hacia ABAJO 👇)
+                const fingers = [];
+                
+                // Dedo en pozol (izquierda) - ARRIBA del botón
+                const fingerLeft = document.createElement('div');
+                fingerLeft.className = 'finger-indicator';
+                fingerLeft.textContent = '👇';
+                const leftRect = shooterLeft.getBoundingClientRect();
+                fingerLeft.style.left = (leftRect.left + leftRect.width / 2 - 30) + 'px';
+                fingerLeft.style.top = (leftRect.top - 80) + 'px'; // Arriba del botón
+                document.body.appendChild(fingerLeft);
+                fingers.push(fingerLeft);
+
+                // Dedo en enojado (centro) - ARRIBA del botón
+                const fingerCenter = document.createElement('div');
+                fingerCenter.className = 'finger-indicator';
+                fingerCenter.textContent = '👇';
+                const centerRect = rocketCenter.getBoundingClientRect();
+                fingerCenter.style.left = (centerRect.left + centerRect.width / 2 - 30) + 'px';
+                fingerCenter.style.top = (centerRect.top - 80) + 'px'; // Arriba del botón
+                document.body.appendChild(fingerCenter);
+                fingers.push(fingerCenter);
+
+                // Dedo en conejo (derecha) - ARRIBA del botón
+                const fingerRight = document.createElement('div');
+                fingerRight.className = 'finger-indicator';
+                fingerRight.textContent = '👇';
+                const rightRect = shooterRight.getBoundingClientRect();
+                fingerRight.style.left = (rightRect.left + rightRect.width / 2 - 30) + 'px';
+                fingerRight.style.top = (rightRect.top - 80) + 'px'; // Arriba del botón
+                document.body.appendChild(fingerRight);
+                fingers.push(fingerRight);
+
+                // Remover todo después de 3 segundos
+                setTimeout(() => {
+                    instructionText.remove();
+                    fingers.forEach(finger => finger.remove());
+                }, 3000);
+
+                // Iniciar cronómetro
+                startTimer();
+
+                // Iniciar spawn de elementos en 3 carriles
+                spawnTimerLeft = setInterval(() => createFallingItem('left'), spawnInterval);
+                spawnTimerCenter = setInterval(() => createFallingItem('center'), spawnInterval * 0.8); // Centro más frecuente
+                spawnTimerRight = setInterval(() => createFallingItem('right'), spawnInterval);
+                
+                increaseDifficulty();
+            }, 4000);
+
+            gtag('event', 'game_start', {
+                'event_category': 'game',
+                'event_label': 'Game Started'
+            });
+        }
+
+        // Terminar juego
+        function endGame(won) {
+            gameActive = false;
+            clearInterval(spawnTimerLeft);
+            clearInterval(spawnTimerCenter);
+            clearInterval(spawnTimerRight);
+            clearInterval(difficultyTimer);
+            stopTimer(); // Detener cronómetro
+            
+            gameArea.innerHTML = '';
+            finalScore.textContent = score;
+            
+            const minutes = Math.floor(gameSeconds / 60);
+            const seconds = gameSeconds % 60;
+            const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (won) {
+                // Victoria - Completó el minuto
+                gameoverTitle.textContent = '¡VICTORIA! 🎉';
+                gameoverTitle.className = 'win';
+                gameoverMessage.innerHTML = `
+                    ✨ ¡Defendiste el pozol durante ${timeStr}! ✨<br>
+                    Puntuación final: ${score} puntos 🏆<br>
+                    ¿Podrás superarme? ¡Demuestra que eres el mejor! 💪
+                `;
+                gameoverButtons.innerHTML = `
+                    <button class="share-btn" onclick="shareScore()" style="font-size: clamp(1.2rem, 5vw, 1.8rem); padding: 20px 45px;">📱 Compartir en WhatsApp</button>
+                    <button class="replay-btn" onclick="restartGame()">🔄 Jugar de nuevo</button>
+                `;
+            } else {
+                // Derrota - Llegó a 0 puntos
+                gameoverTitle.textContent = '¡GAME OVER! 😔';
+                gameoverTitle.className = 'lose';
+                gameoverMessage.innerHTML = `
+                    Duraste ${timeStr} defendiendo el pozol<br>
+                    ¡Pero puedes hacerlo mejor! 💪
+                `;
+                gameoverButtons.innerHTML = `
+                    <button class="replay-btn" onclick="restartGame()">🔄 Intentar de nuevo</button>
+                `;
+            }
+
+            gameoverModal.classList.add('show');
+            campaignSong.pause();
+
+            gtag('event', 'game_over', {
+                'event_category': 'game',
+                'event_label': won ? 'Win' : 'Lose',
+                'value': score,
+                'time': gameSeconds
+            });
+        }
+
+        // Reiniciar juego
+        function restartGame() {
+            gameoverModal.classList.remove('show');
+            startGame();
+        }
+
+        // Compartir en WhatsApp
+        function shareScore() {
+            const url = window.location.href;
+            const minutes = Math.floor(gameSeconds / 60);
+            const seconds = gameSeconds % 60;
+            const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            const message = `✨ ¡Algo nuevo está por llegar! ✨%0A%0A🎮 ¡Defendí el pozol durante ${timeStr} con ${score} puntos! 🐰🥤%0A%0A¿Podrás superarme? ¡Demuestra que eres el mejor! 💪🏆%0A%0A👉 Juega aquí: ${url}`;
+            
+            window.open(`https://wa.me/?text=${message}`, '_blank');
+
+            gtag('event', 'share', {
+                'event_category': 'social',
+                'event_label': 'WhatsApp Share',
+                'value': score,
+                'time': gameSeconds
+            });
+        }
+
+        // Event Listeners
+        startButton.addEventListener('click', startGame);
+        shooterLeft.addEventListener('click', () => shoot('left'));
+        shooterRight.addEventListener('click', () => shoot('right'));
+        rocketCenter.addEventListener('click', () => shoot('center'));
+
+        window.addEventListener('load', () => {
+            gtag('event', 'page_view', {
+                'page_title': 'JS - Defiende el Pozol',
+                'page_location': window.location.href
+            });
         });
-      });
 
-      // Inicialización de página
-      window.addEventListener("load", () => {
-        // NO iniciar cámara automáticamente - se inicia desde el modal
-
-        // Google Analytics - Página vista
-        gtag("event", "page_view", {
-          page_title: "Jovani Salazar - Campaña",
-          page_location: window.location.href,
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
         });
-      });
-
-      // Prevenir zoom en móviles
-      document.addEventListener("gesturestart", function (e) {
-        e.preventDefault();
-      });
     </script>
-  </body>
+</body>
 </html>
