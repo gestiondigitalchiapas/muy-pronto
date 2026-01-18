@@ -1160,19 +1160,14 @@
             const seconds = gameSeconds % 60;
             const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             
-            // Crear mensaje con emojis que funcionen en WhatsApp
-            const messageText = `✨ ¡Algo nuevo está por llegar! ✨
-
-🎮 ¡Defendí el pozol durante ${timeStr} con ${score} puntos! 🐰
-
-¿Podrás superarme? ¡Demuestra que eres el mejor! 💪🏆
-
-👉 Juega aquí: ${url}`;
+            // Crear mensaje con formato WhatsApp API (usar %0A para saltos de línea)
+            const message = 
+                '✨ ¡Algo nuevo está por llegar! ✨%0A%0A' +
+                '🎮 ¡Defendí el pozol durante ' + timeStr + ' con ' + score + ' puntos! 🐰%0A%0A' +
+                '¿Podrás superarme? ¡Demuestra que eres el mejor! 💪🏆%0A%0A' +
+                '👉 Juega aquí: ' + url;
             
-            // Usar encodeURIComponent para que los emojis se codifiquen correctamente
-            const encodedMessage = encodeURIComponent(messageText);
-            
-            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+            window.open('https://wa.me/?text=' + message, '_blank');
 
             gtag('event', 'share', {
                 'event_category': 'social',
