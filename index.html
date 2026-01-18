@@ -242,10 +242,12 @@
         .falling-item.word {
             font-family: 'Righteous', cursive;
             font-weight: bold;
-            padding: 8px 16px;
+            padding: 10px 20px;
             border-radius: 15px;
-            font-size: 18px;
+            font-size: clamp(16px, 4vw, 22px);
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+            transition: all 0.2s ease;
         }
 
         .falling-item.positive.word {
@@ -637,7 +639,7 @@
     </div>
 
     <!-- Audio -->
-    <audio id="campaignSong" style="display: none;">
+    <audio id="campaignSong" style="display: none;" loop autoplay>
         <source src="cancion-giovani.mp3" type="audio/mpeg">
     </audio>
     <audio id="shootSound" style="display: none;" preload="auto">
@@ -683,36 +685,45 @@
 
         // Elementos positivos (caen en los lados)
         const positiveItems = [
-            { type: 'emoji', content: '🐰', points: 0 },
-            { type: 'emoji', content: '🐇', points: 0 },
-            { type: 'emoji', content: '🥤', points: 0 },
-            { type: 'emoji', content: '❤️', points: 0 },
-            { type: 'emoji', content: '✨', points: 0 },
-            { type: 'emoji', content: '🥕', points: 0 },
-            { type: 'emoji', content: '💖', points: 0 },
-            { type: 'emoji', content: '⭐', points: 0 },
-            { type: 'word', content: 'HONESTIDAD', points: 0 },
-            { type: 'word', content: 'COMPROMISO', points: 0 },
-            { type: 'word', content: 'AYUDAR', points: 0 },
-            { type: 'word', content: 'UNIDAD', points: 0 },
-            { type: 'word', content: 'LEALTAD', points: 0 },
-            { type: 'word', content: 'RESPETO', points: 0 }
+            { type: 'word', content: '✨🐰🐰 CONEJO 🐰🐰✨', points: 25 },
+            { type: 'word', content: '🔥🐰 JS 🐰🔥', points: 30 },
+            { type: 'word', content: '✨🐰 POZOL 🐰✨', points: 25 },
+            { type: 'word', content: '🐰 trabajo 🐰', points: 10 },
+            { type: 'word', content: '🐰 esfuerzo 🐰', points: 10 },
+            { type: 'word', content: '🐰 compromiso 🐰', points: 10 },
+            { type: 'word', content: '🐰 honestidad 🐰', points: 10 },
+            { type: 'word', content: '🐰 respeto 🐰', points: 10 },
+            { type: 'word', content: '🐰 cercanía 🐰', points: 10 },
+            { type: 'word', content: '🐰 palabra 🐰', points: 10 },
+            { type: 'word', content: '🐰 congruencia 🐰', points: 10 },
+            { type: 'word', content: '🐰 Tuxtla 🐰', points: 15 },
+            { type: 'word', content: '🐰 visión 🐰', points: 10 },
+            { type: 'word', content: '🐰 futuro 🐰', points: 10 },
+            { type: 'word', content: '🐰 comunidad 🐰', points: 10 },
+            { type: 'word', content: '🐰 progreso 🐰', points: 10 },
+            { type: 'word', content: '🐰 unión 🐰', points: 10 },
+            { type: 'word', content: '🐰 confianza 🐰', points: 10 },
+            { type: 'word', content: '🐰 bienestar 🐰', points: 10 }
         ];
 
         // Elementos negativos (caen en el centro)
         const negativeItems = [
-            { type: 'emoji', content: '💩', points: -15 },
-            { type: 'emoji', content: '😈', points: -15 },
-            { type: 'emoji', content: '👎', points: -10 },
-            { type: 'emoji', content: '❌', points: -10 },
-            { type: 'emoji', content: '💔', points: -10 },
-            { type: 'emoji', content: '🚫', points: -10 },
-            { type: 'word', content: 'ROBAR', points: -20 },
-            { type: 'word', content: 'TRAICIÓN', points: -20 },
-            { type: 'word', content: 'FALSEDAD', points: -20 },
-            { type: 'word', content: 'MENTIR', points: -15 },
-            { type: 'word', content: 'ENGAÑAR', points: -15 },
-            { type: 'word', content: 'CORRUPCIÓN', points: -25 }
+            { type: 'word', content: '❌ robar ❌', points: -15 },
+            { type: 'word', content: '❌ mentir ❌', points: -15 },
+            { type: 'word', content: '❌ engañar ❌', points: -15 },
+            { type: 'word', content: '❌ traición ❌', points: -20 },
+            { type: 'word', content: '❌ abuso ❌', points: -20 },
+            { type: 'word', content: '❌ corrupción ❌', points: -25 },
+            { type: 'word', content: '❌ soberbia ❌', points: -15 },
+            { type: 'word', content: '❌ cinismo ❌', points: -15 },
+            { type: 'word', content: '❌ indiferencia ❌', points: -15 },
+            { type: 'word', content: '❌ egoísmo ❌', points: -15 },
+            { type: 'word', content: '❌ simulación ❌', points: -15 },
+            { type: 'word', content: '❌ promesas ❌', points: -15 },
+            { type: 'word', content: '❌ imposición ❌', points: -15 },
+            { type: 'word', content: '❌ opacidad ❌', points: -15 },
+            { type: 'word', content: '❌ favoritismo ❌', points: -15 },
+            { type: 'word', content: '❌ manipular ❌', points: -20 }
         ];
 
         // Iniciar cámara
@@ -739,32 +750,28 @@
             const item = items[Math.floor(Math.random() * items.length)];
 
             const element = document.createElement('div');
-            element.className = `falling-item ${isNegative ? 'negative' : 'positive'} ${item.type}`;
-            
-            if (item.type === 'word') {
-                element.textContent = item.content;
-                element.classList.add('word');
-            } else {
-                element.textContent = item.content;
-            }
+            element.className = `falling-item ${isNegative ? 'negative' : 'positive'} word`;
+            element.textContent = item.content;
 
             element.dataset.negative = isNegative;
             element.dataset.points = item.points;
             element.dataset.clicked = 'false';
 
             // Posición aleatoria en TODO el ancho de la pantalla
-            const xPosition = Math.random() * (window.innerWidth - 100);
+            const xPosition = Math.random() * (window.innerWidth - 250); // Margen para palabras largas
             element.style.left = xPosition + 'px';
             element.style.top = '-100px';
+            element.style.zIndex = Math.floor(Math.random() * 100) + 10; // z-index aleatorio para evitar sobreposición visual
 
             gameArea.appendChild(element);
 
-            // Click en el elemento
-            element.addEventListener('click', () => {
+            // Click en el elemento - MEJORADO
+            const clickHandler = function(e) {
+                e.stopPropagation(); // Prevenir clicks múltiples
                 if (element.dataset.clicked === 'true') return;
                 element.dataset.clicked = 'true';
 
-                // Detener caída
+                // Detener caída inmediatamente
                 if (element.fallInterval) {
                     clearInterval(element.fallInterval);
                 }
@@ -773,13 +780,13 @@
                 const pts = parseInt(element.dataset.points);
 
                 if (isNeg) {
-                    // Clickeó elemento NEGATIVO = -10 puntos (error)
-                    updateScore(-10);
+                    // Clickeó elemento NEGATIVO = RESTA puntos
+                    updateScore(pts); // pts ya es negativo
                     playSound('shoot'); // Sonido de error
                     element.style.transform = 'scale(0.5) rotate(180deg)';
                 } else {
-                    // Clickeó elemento POSITIVO = +puntos (correcto)
-                    updateScore(pts);
+                    // Clickeó elemento POSITIVO = SUMA puntos
+                    updateScore(pts); // pts es positivo
                     playSound('hit'); // Sonido de moneda
                     createExplosion(
                         element.getBoundingClientRect().left + element.offsetWidth / 2,
@@ -788,9 +795,16 @@
                     element.style.transform = 'scale(1.5) rotate(360deg)';
                 }
 
+                // Remover inmediatamente
                 element.style.opacity = '0';
-                setTimeout(() => element.remove(), 300);
-            });
+                element.style.pointerEvents = 'none';
+                setTimeout(() => {
+                    element.removeEventListener('click', clickHandler);
+                    element.remove();
+                }, 300);
+            };
+
+            element.addEventListener('click', clickHandler);
 
             // Animación de caída
             let position = -100;
@@ -809,13 +823,8 @@
                 // Si llegó al fondo sin ser clickeado
                 if (position > window.innerHeight) {
                     clearInterval(fallInterval);
-                    
-                    // Si era POSITIVO y NO lo clickearon, pierden puntos
-                    if (!isNegative && element.dataset.clicked === 'false') {
-                        updateScore(-5); // Penalización menor por dejar pasar buenos
-                    }
-                    // Si era NEGATIVO y NO lo clickearon, correcto (no pasa nada)
-                    
+                    // SISTEMA SIMPLE: Solo suma/resta si clickean
+                    // No pasa nada si llegan al fondo
                     element.remove();
                 }
             }, 1000 / 60);
@@ -967,7 +976,15 @@
             levelDisplay.textContent = '1';
 
             startCamera();
-            campaignSong.play().catch(() => {});
+            
+            // Reproducir música en loop (nunca se detiene hasta game over)
+            campaignSong.loop = true;
+            campaignSong.play().catch(() => {
+                // Si falla el autoplay, intentar de nuevo en el primer click
+                document.addEventListener('click', () => {
+                    campaignSong.play().catch(() => {});
+                }, { once: true });
+            });
 
             // Countdown
             let countdownNum = 3;
