@@ -646,7 +646,7 @@
     <div class="welcome-modal" id="welcomeModal">
         <h2>🐰 ATRAPA EL POZOL 🐰</h2>
         <div class="instructions">
-            <p>⏱️ <strong>Tienes 1 MINUTO - ¡Clickea lo más rápido que puedas!</strong></p>
+            <p>⏱️ <strong>Tienes 2 MINUTOS - ¡Clickea lo más rápido que puedas!</strong></p>
             <p>✅ <strong>CLICKEA lo BUENO:</strong> 🟢 Palabras verdes y emoticons positivos</p>
             <p>❌ <strong>NO clickees lo MALO:</strong> 🔴 Palabras rojas y emoticons negativos</p>
             <p>🏆 Cada click correcto = +puntos | Click incorrecto = -puntos</p>
@@ -686,7 +686,7 @@
         let difficultyTimer;
         let gameTimer; // Timer del cronómetro
         let gameSeconds = 0; // Segundos transcurridos
-        let gameTimeLimit = 60; // Límite de 1 minuto (60 segundos)
+        let gameTimeLimit = 120; // Límite de 2 minutos (120 segundos)
         
         const video = document.getElementById('video');
         const gameArea = document.getElementById('gameArea');
@@ -882,6 +882,44 @@
             setTimeout(() => explosion.remove(), 500);
         }
 
+        // Emitir conejos decorativos desde pozol o conejo
+        function emitBunnies(element) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // Crear entre 5 y 8 conejos
+            const numBunnies = 5 + Math.floor(Math.random() * 4);
+            
+            for (let i = 0; i < numBunnies; i++) {
+                setTimeout(() => {
+                    const bunny = document.createElement('div');
+                    bunny.textContent = '🐰';
+                    bunny.style.position = 'fixed';
+                    bunny.style.left = centerX + 'px';
+                    bunny.style.top = centerY + 'px';
+                    bunny.style.fontSize = '30px';
+                    bunny.style.zIndex = '999';
+                    bunny.style.pointerEvents = 'none';
+                    bunny.style.transition = 'all 1s ease-out';
+                    
+                    document.body.appendChild(bunny);
+                    
+                    // Animar hacia arriba y a los lados
+                    setTimeout(() => {
+                        const angle = (Math.random() * 120) - 60; // -60 a +60 grados
+                        const distance = 150 + Math.random() * 100; // 150-250px
+                        const radians = (angle * Math.PI) / 180;
+                        
+                        bunny.style.transform = `translate(${Math.cos(radians) * distance}px, ${-Math.abs(Math.sin(radians) * distance) - 100}px) rotate(${angle * 2}deg) scale(0.5)`;
+                        bunny.style.opacity = '0';
+                    }, 10);
+                    
+                    setTimeout(() => bunny.remove(), 1100);
+                }, i * 50); // Delay entre cada conejo
+            }
+        }
+
         // Actualizar puntuación
         function updateScore(points) {
             score += points;
@@ -937,8 +975,8 @@
             const seconds = timeRemaining % 60;
             timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             
-            // Cambiar color cuando queden 5 segundos o menos
-            if (timeRemaining <= 5 && timeRemaining > 0) {
+            // Cambiar color cuando queden 10 segundos o menos
+            if (timeRemaining <= 10 && timeRemaining > 0) {
                 timerDisplay.style.color = '#F44336'; // Rojo
                 timerDisplay.style.animation = 'blink 0.5s ease-in-out infinite';
             }
@@ -959,9 +997,9 @@
                     playSound('tick');
                 }
                 
-                // Terminar juego después de 1 minuto
+                // Terminar juego después de 2 minutos
                 if (gameSeconds >= gameTimeLimit) {
-                    endGame(true); // Victoria por completar el minuto
+                    endGame(true); // Victoria por completar los 2 minutos
                 }
             }, 1000);
         }
@@ -1147,13 +1185,13 @@
         // Event Listeners
         startButton.addEventListener('click', startGame);
 
-        // Efectos decorativos para pozol y conejo
+        // Efectos decorativos para pozol y conejo - SIN SONIDO, solo animación
         shooterLeft.addEventListener('click', () => {
             shooterLeft.style.animation = 'none';
             setTimeout(() => {
                 shooterLeft.style.animation = 'shake 0.5s ease-in-out, bounce-pulse 2s ease-in-out infinite';
             }, 10);
-            playSound('hit');
+            emitBunnies(shooterLeft); // Emitir conejos
         });
 
         shooterRight.addEventListener('click', () => {
@@ -1161,7 +1199,7 @@
             setTimeout(() => {
                 shooterRight.style.animation = 'shake 0.5s ease-in-out, bounce-pulse 2s ease-in-out infinite';
             }, 10);
-            playSound('hit');
+            emitBunnies(shooterRight); // Emitir conejos
         });
 
         window.addEventListener('load', () => {
