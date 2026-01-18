@@ -883,7 +883,7 @@
         }
 
         // Emitir conejos decorativos desde pozol o conejo
-        function emitBunnies(element) {
+        function emitBunnies(element, direction = 'right') {
             const rect = element.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
@@ -905,9 +905,17 @@
                     
                     document.body.appendChild(bunny);
                     
-                    // Animar hacia arriba y a los lados
+                    // Animar hacia arriba y a los lados según la dirección
                     setTimeout(() => {
-                        const angle = (Math.random() * 120) - 60; // -60 a +60 grados
+                        let angle;
+                        if (direction === 'left') {
+                            // Para conejo derecho: emitir hacia la IZQUIERDA (120° a 240°)
+                            angle = 120 + (Math.random() * 120); // 120 a 240 grados
+                        } else {
+                            // Para pozol izquierdo: emitir hacia la DERECHA (-60° a 60°)
+                            angle = (Math.random() * 120) - 60; // -60 a 60 grados
+                        }
+                        
                         const distance = 150 + Math.random() * 100; // 150-250px
                         const radians = (angle * Math.PI) / 180;
                         
@@ -1191,7 +1199,7 @@
             setTimeout(() => {
                 shooterLeft.style.animation = 'shake 0.5s ease-in-out, bounce-pulse 2s ease-in-out infinite';
             }, 10);
-            emitBunnies(shooterLeft); // Emitir conejos
+            emitBunnies(shooterLeft, 'right'); // Pozol emite hacia la derecha
         });
 
         shooterRight.addEventListener('click', () => {
@@ -1199,7 +1207,7 @@
             setTimeout(() => {
                 shooterRight.style.animation = 'shake 0.5s ease-in-out, bounce-pulse 2s ease-in-out infinite';
             }, 10);
-            emitBunnies(shooterRight); // Emitir conejos
+            emitBunnies(shooterRight, 'left'); // Conejo emite hacia la izquierda
         });
 
         window.addEventListener('load', () => {
