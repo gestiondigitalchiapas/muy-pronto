@@ -205,6 +205,19 @@
         .shooter-left,
         .shooter-right {
             animation: bounce-pulse 2s ease-in-out infinite;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .shooter-left:hover,
+        .shooter-right:hover {
+            transform: scale(1.2) rotate(5deg);
+            filter: drop-shadow(0 15px 30px rgba(240, 78, 133, 1));
+        }
+
+        .shooter-left:active,
+        .shooter-right:active {
+            animation: shake 0.5s ease-in-out;
         }
 
         @keyframes bounce-pulse {
@@ -216,6 +229,12 @@
                 transform: scale(1.1) translateY(-10px);
                 filter: drop-shadow(0 10px 25px rgba(240, 78, 133, 0.8));
             }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px) rotate(-10deg); }
+            20%, 40%, 60%, 80% { transform: translateX(10px) rotate(10deg); }
         }
 
         @keyframes blink {
@@ -1056,17 +1075,20 @@
                 gameoverTitle.textContent = '¡TIEMPO TERMINADO! ⏰';
                 gameoverTitle.className = 'win';
                 gameoverMessage.innerHTML = `
-                    ✨ ¡Completaste el desafío! ✨<br>
-                    Puntuación final: ${score} puntos 🏆<br>
-                    ¿Podrás superarme? ¡Demuestra que eres el mejor! 💪
+                    ✨ ¡Algo nuevo está por llegar! ✨<br>
+                    Puntuación: <strong>${score} puntos</strong><br>
+                    ¡He defendido el pozol! 🏆<br>
+                    ¿Podrás superar tu récord? ¡Inténtalo de nuevo! 💪
                 `;
             } else {
                 // Derrota - Llegó a 0 puntos antes del tiempo
                 gameoverTitle.textContent = '¡SE ACABÓ! 😔';
                 gameoverTitle.className = 'lose';
                 gameoverMessage.innerHTML = `
-                    Duraste ${timeStr} en el desafío<br>
-                    ¡Inténtalo de nuevo y hazlo mejor! 💪
+                    ✨ ¡Algo nuevo está por llegar! ✨<br>
+                    Puntuación: <strong>${score} puntos</strong><br>
+                    Duraste ${timeStr} defendiendo el pozol<br>
+                    ¡No te rindas! ¡Puedes hacerlo mejor! 💪
                 `;
             }
             
@@ -1099,9 +1121,20 @@
             const minutes = Math.floor(gameSeconds / 60);
             const seconds = gameSeconds % 60;
             const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            const message = `✨ ¡Algo nuevo está por llegar! ✨%0A%0A🎮 ¡Defendí el pozol durante ${timeStr} con ${score} puntos! 🐰%0A%0A¿Podrás superarme? ¡Demuestra que eres el mejor! 💪🏆%0A%0A👉 Juega aquí: ${url}`;
             
-            window.open(`https://wa.me/?text=${message}`, '_blank');
+            // Crear mensaje con emojis que funcionen en WhatsApp
+            const messageText = `✨ ¡Algo nuevo está por llegar! ✨
+
+🎮 ¡Defendí el pozol durante ${timeStr} con ${score} puntos! 🐰
+
+¿Podrás superarme? ¡Demuestra que eres el mejor! 💪🏆
+
+👉 Juega aquí: ${url}`;
+            
+            // Usar encodeURIComponent para que los emojis se codifiquen correctamente
+            const encodedMessage = encodeURIComponent(messageText);
+            
+            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
 
             gtag('event', 'share', {
                 'event_category': 'social',
@@ -1113,6 +1146,23 @@
 
         // Event Listeners
         startButton.addEventListener('click', startGame);
+
+        // Efectos decorativos para pozol y conejo
+        shooterLeft.addEventListener('click', () => {
+            shooterLeft.style.animation = 'none';
+            setTimeout(() => {
+                shooterLeft.style.animation = 'shake 0.5s ease-in-out, bounce-pulse 2s ease-in-out infinite';
+            }, 10);
+            playSound('hit');
+        });
+
+        shooterRight.addEventListener('click', () => {
+            shooterRight.style.animation = 'none';
+            setTimeout(() => {
+                shooterRight.style.animation = 'shake 0.5s ease-in-out, bounce-pulse 2s ease-in-out infinite';
+            }, 10);
+            playSound('hit');
+        });
 
         window.addEventListener('load', () => {
             gtag('event', 'page_view', {
