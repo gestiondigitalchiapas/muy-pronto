@@ -233,10 +233,17 @@
             filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.4));
             z-index: 4;
             transition: transform 0.1s ease;
+            /* Área clickeable más grande */
+            padding: 15px;
+            margin: -15px; /* Compensar padding para mantener posición */
+        }
+
+        .falling-item:hover {
+            transform: scale(1.1);
         }
 
         .falling-item:active {
-            transform: scale(0.8);
+            transform: scale(0.9);
         }
 
         .falling-item.word {
@@ -740,12 +747,29 @@
             }
         }
 
+        // Array para rastrear posiciones ocupadas y evitar sobreposición
+        let occupiedPositions = [];
+
+        // Verificar si una posición está libre
+        function isPositionFree(x, y, width, height) {
+            for (let pos of occupiedPositions) {
+                // Verificar si hay sobreposición
+                if (x < pos.x + pos.width + 50 && // Margen de 50px
+                    x + width + 50 > pos.x &&
+                    y < pos.y + pos.height + 30 &&
+                    y + height + 30 > pos.y) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         // Crear elemento que cae (TODOS clickeables)
         function createFallingItem(lane) {
             if (!gameActive) return;
 
             // Mix aleatorio de positivos y negativos en TODO el ancho
-            const isNegative = Math.random() > 0.5; // 50% negativos, 50% positivos
+            const isNegative = Math.random() > 0.5;
             const items = isNegative ? negativeItems : positiveItems;
             const item = items[Math.floor(Math.random() * items.length)];
 
@@ -757,18 +781,50 @@
             element.dataset.points = item.points;
             element.dataset.clicked = 'false';
 
-            // Posición aleatoria en TODO el ancho de la pantalla
-            const xPosition = Math.random() * (window.innerWidth - 250); // Margen para palabras largas
+            // Intentar encontrar posición libre (máximo 5 intentos)
+            let xPosition, yPosition = -100;
+            let attempts = 0;
+            let positionFound = false;
+
+            while (attempts < 5 && !positionFound) {
+                xPosition = 20 + Math.random() * (window.innerWidth - 280); // Márgenes de seguridad
+                
+                // Verificar si la posición está libre
+                if (isPositionFree(xPosition, yPosition, 250, 50)) {
+                    positionFound = true;
+                }
+                attempts++;
+            }
+
+            // Si no encontró posición libre, usar una aleatoria de todos modos
+            if (!positionFound) {
+                xPosition = 20 + Math.random() * (window.innerWidth - 280);
+            }
+
             element.style.left = xPosition + 'px';
-            element.style.top = '-100px';
-            element.style.zIndex = Math.floor(Math.random() * 100) + 10; // z-index aleatorio para evitar sobreposición visual
+            element.style.top = yPosition + 'px';
+            element.style.zIndex = 100 - Math.floor(yPosition / 10); // z-index basado en posición Y
 
             gameArea.appendChild(element);
 
-            // Click en el elemento - MEJORADO
+            // Registrar posición ocupada
+            const positionId = occupiedPositions.push({
+                x: xPosition,
+                y: yPosition,
+                width: 250,
+                height: 50,
+                element: element
+            }) - 1;
+
+            // Click en el elemento - MEJORADO con mousedown para mejor detección
+            let hasBeenClicked = false;
+            
             const clickHandler = function(e) {
-                e.stopPropagation(); // Prevenir clicks múltiples
-                if (element.dataset.clicked === 'true') return;
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (hasBeenClicked) return;
+                hasBeenClicked = true;
                 element.dataset.clicked = 'true';
 
                 // Detener caída inmediatamente
@@ -776,18 +832,21 @@
                     clearInterval(element.fallInterval);
                 }
 
+                // Remover de posiciones ocupadas
+                occupiedPositions = occupiedPositions.filter((_, i) => i !== positionId);
+
                 const isNeg = element.dataset.negative === 'true';
                 const pts = parseInt(element.dataset.points);
 
                 if (isNeg) {
                     // Clickeó elemento NEGATIVO = RESTA puntos
-                    updateScore(pts); // pts ya es negativo
-                    playSound('shoot'); // Sonido de error
+                    updateScore(pts);
+                    playSound('shoot');
                     element.style.transform = 'scale(0.5) rotate(180deg)';
                 } else {
                     // Clickeó elemento POSITIVO = SUMA puntos
-                    updateScore(pts); // pts es positivo
-                    playSound('hit'); // Sonido de moneda
+                    updateScore(pts);
+                    playSound('hit');
                     createExplosion(
                         element.getBoundingClientRect().left + element.offsetWidth / 2,
                         element.getBoundingClientRect().top + element.offsetHeight / 2
@@ -798,21 +857,28 @@
                 // Remover inmediatamente
                 element.style.opacity = '0';
                 element.style.pointerEvents = 'none';
+                
                 setTimeout(() => {
-                    element.removeEventListener('click', clickHandler);
+                    element.removeEventListener('mousedown', clickHandler);
+                    element.removeEventListener('touchstart', clickHandler);
                     element.remove();
                 }, 300);
             };
 
-            element.addEventListener('click', clickHandler);
+            // Soportar tanto mouse como touch
+            element.addEventListener('mousedown', clickHandler);
+            element.addEventListener('touchstart', clickHandler, { passive: false });
 
-            // Animación de caída
-            let position = -100;
-            const totalDistance = window.innerHeight + 100;
+            // Animación de caída - MEJORADO para llegar hasta el fondo
+            let position = yPosition;
+            const screenHeight = window.innerHeight;
+            const totalDistance = screenHeight + 150; // Asegurar que pasa el fondo
             const pixelsPerFrame = totalDistance / (gameSpeed / (1000 / 60));
+            
             const fallInterval = setInterval(() => {
                 if (!gameActive) {
                     clearInterval(fallInterval);
+                    occupiedPositions = occupiedPositions.filter((_, i) => i !== positionId);
                     element.remove();
                     return;
                 }
@@ -820,12 +886,20 @@
                 position += pixelsPerFrame;
                 element.style.top = position + 'px';
 
-                // Si llegó al fondo sin ser clickeado
-                if (position > window.innerHeight) {
+                // Actualizar posición en el array
+                if (occupiedPositions[positionId]) {
+                    occupiedPositions[positionId].y = position;
+                }
+
+                // Si llegó MÁS ALLÁ del fondo de la pantalla
+                if (position > screenHeight + 100) {
                     clearInterval(fallInterval);
-                    // SISTEMA SIMPLE: Solo suma/resta si clickean
-                    // No pasa nada si llegan al fondo
-                    element.remove();
+                    occupiedPositions = occupiedPositions.filter((_, i) => i !== positionId);
+                    
+                    // Remover elemento
+                    if (!hasBeenClicked) {
+                        element.remove();
+                    }
                 }
             }, 1000 / 60);
 
@@ -972,6 +1046,7 @@
             level = 1;
             gameSpeed = 6000;
             spawnInterval = 2500;
+            occupiedPositions = []; // Reiniciar posiciones ocupadas
             scoreDisplay.textContent = '100';
             levelDisplay.textContent = '1';
 
@@ -1031,6 +1106,9 @@
             clearInterval(spawnTimerRight);
             clearInterval(difficultyTimer);
             stopTimer(); // Detener cronómetro
+            
+            // Limpiar posiciones ocupadas
+            occupiedPositions = [];
             
             gameArea.innerHTML = '';
             finalScore.textContent = score;
