@@ -201,37 +201,42 @@
             object-fit: contain;
         }
 
-        /* Cohete central */
-        .rocket-center {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: clamp(60px, 12vw, 100px);
-            z-index: 10;
-            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
-            animation: rocket-float 2s ease-in-out infinite;
-            cursor: pointer;
-            transition: transform 0.1s ease;
+        /* Animación llamativa para los shooters decorativos */
+        .shooter-left,
+        .shooter-right {
+            animation: bounce-pulse 2s ease-in-out infinite;
         }
 
-        .rocket-center:active {
-            transform: translateX(-50%) scale(0.9);
+        @keyframes bounce-pulse {
+            0%, 100% { 
+                transform: scale(1) translateY(0);
+                filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+            }
+            50% { 
+                transform: scale(1.1) translateY(-10px);
+                filter: drop-shadow(0 10px 25px rgba(240, 78, 133, 0.8));
+            }
         }
 
-        @keyframes rocket-float {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-10px); }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
         /* Elementos que caen */
         .falling-item {
             position: absolute;
             font-size: 35px;
-            pointer-events: none;
+            pointer-events: auto; /* CLICKEABLES */
+            cursor: pointer;
             user-select: none;
             filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.4));
             z-index: 4;
+            transition: transform 0.1s ease;
+        }
+
+        .falling-item:active {
+            transform: scale(0.8);
         }
 
         .falling-item.word {
@@ -600,12 +605,10 @@
     <!-- Área de juego -->
     <div id="gameArea"></div>
 
-    <!-- Shooters -->
+    <!-- Shooters (solo decorativos) -->
     <div class="shooter-left" id="shooterLeft">
         <img src="jicara.png" alt="Pozol">
     </div>
-
-    <div class="rocket-center" id="rocketCenter">😠</div>
 
     <div class="shooter-right" id="shooterRight">
         <img src="conejo.png" alt="Conejo">
@@ -613,13 +616,13 @@
 
     <!-- Modal de bienvenida -->
     <div class="welcome-modal" id="welcomeModal">
-        <h2>🐰 DEFIENDE EL POZOL 🥤</h2>
+        <h2>🐰 ATRAPA EL POZOL 🥤</h2>
         <div class="instructions">
-            <p>⏱️ <strong>¿Cuánto podrás defender el pozol en UN MINUTO?</strong></p>
-            <p>🎯 <strong>3 CARRILES:</strong> Izquierda y Derecha = BUENO 🟢 | Centro = MALO 🔴</p>
-            <p>✅ <strong>Solo dispara al CENTRO</strong> (palabras rojas y emoticons malos)</p>
-            <p>❌ <strong>NO dispares a los lados</strong> (déjalos caer sin tocar)</p>
-            <p>🥤😠🐰 Los 3 botones disparan hacia el centro</p>
+            <p>⏱️ <strong>Tienes 1 MINUTO - ¡Clickea lo más rápido que puedas!</strong></p>
+            <p>✅ <strong>CLICKEA lo BUENO:</strong> 🟢 Palabras verdes y emoticons positivos</p>
+            <p>❌ <strong>NO clickees lo MALO:</strong> 🔴 Palabras rojas y emoticons negativos</p>
+            <p>🏆 Cada click correcto = +puntos | Click incorrecto = -puntos</p>
+            <p>⚠️ ¡A partir del nivel 2 todo cae más rápido!</p>
         </div>
         <button id="startButton">¡JUGAR! 🎮</button>
     </div>
@@ -674,7 +677,6 @@
         const startButton = document.getElementById('startButton');
         const shooterLeft = document.getElementById('shooterLeft');
         const shooterRight = document.getElementById('shooterRight');
-        const rocketCenter = document.getElementById('rocketCenter');
         const campaignSong = document.getElementById('campaignSong');
         const shootSound = document.getElementById('shootSound');
         const hitSound = document.getElementById('hitSound');
@@ -727,46 +729,13 @@
             }
         }
 
-        // Crear elemento que cae
+        // Crear elemento que cae (TODOS clickeables)
         function createFallingItem(lane) {
             if (!gameActive) return;
 
-            let items, isNegative;
-            let xPosition;
-
-            // Obtener las posiciones EXACTAS de los shooters del DOM
-            const leftShooterRect = shooterLeft.getBoundingClientRect();
-            const centerShooterRect = rocketCenter.getBoundingClientRect();
-            const rightShooterRect = shooterRight.getBoundingClientRect();
-
-            // Calcular el centro de cada shooter
-            const leftShooterCenter = leftShooterRect.left + (leftShooterRect.width / 2);
-            const centerShooterCenter = centerShooterRect.left + (centerShooterRect.width / 2);
-            const rightShooterCenter = rightShooterRect.left + (rightShooterRect.width / 2);
-
-            if (lane === 'left') {
-                // Lado izquierdo - POSITIVOS
-                // Caen en una línea vertical desde el pozol con pequeña variación
-                items = positiveItems;
-                isNegative = false;
-                const variance = 30; // ±30 píxeles de variación
-                xPosition = leftShooterCenter - variance + Math.random() * (variance * 2);
-            } else if (lane === 'right') {
-                // Lado derecho - POSITIVOS
-                // Caen en una línea vertical desde el conejo con pequeña variación
-                items = positiveItems;
-                isNegative = false;
-                const variance = 30;
-                xPosition = rightShooterCenter - variance + Math.random() * (variance * 2);
-            } else {
-                // Centro - NEGATIVOS
-                // Caen en una línea vertical desde el cohete con pequeña variación
-                items = negativeItems;
-                isNegative = true;
-                const variance = 40; // Un poco más de rango en el centro
-                xPosition = centerShooterCenter - variance + Math.random() * (variance * 2);
-            }
-
+            // Mix aleatorio de positivos y negativos en TODO el ancho
+            const isNegative = Math.random() > 0.5; // 50% negativos, 50% positivos
+            const items = isNegative ? negativeItems : positiveItems;
             const item = items[Math.floor(Math.random() * items.length)];
 
             const element = document.createElement('div');
@@ -781,14 +750,47 @@
 
             element.dataset.negative = isNegative;
             element.dataset.points = item.points;
-            element.dataset.destroyed = 'false';
+            element.dataset.clicked = 'false';
 
-            // Centrar el elemento en su posición X (ajustar por el ancho del elemento)
-            element.style.left = (xPosition - 20) + 'px'; // -20 para centrar aprox
-
+            // Posición aleatoria en TODO el ancho de la pantalla
+            const xPosition = Math.random() * (window.innerWidth - 100);
+            element.style.left = xPosition + 'px';
             element.style.top = '-100px';
 
             gameArea.appendChild(element);
+
+            // Click en el elemento
+            element.addEventListener('click', () => {
+                if (element.dataset.clicked === 'true') return;
+                element.dataset.clicked = 'true';
+
+                // Detener caída
+                if (element.fallInterval) {
+                    clearInterval(element.fallInterval);
+                }
+
+                const isNeg = element.dataset.negative === 'true';
+                const pts = parseInt(element.dataset.points);
+
+                if (isNeg) {
+                    // Clickeó elemento NEGATIVO = -10 puntos (error)
+                    updateScore(-10);
+                    playSound('shoot'); // Sonido de error
+                    element.style.transform = 'scale(0.5) rotate(180deg)';
+                } else {
+                    // Clickeó elemento POSITIVO = +puntos (correcto)
+                    updateScore(pts);
+                    playSound('hit'); // Sonido de moneda
+                    createExplosion(
+                        element.getBoundingClientRect().left + element.offsetWidth / 2,
+                        element.getBoundingClientRect().top + element.offsetHeight / 2
+                    );
+                    element.style.transform = 'scale(1.5) rotate(360deg)';
+                }
+
+                element.style.opacity = '0';
+                setTimeout(() => element.remove(), 300);
+            });
 
             // Animación de caída
             let position = -100;
@@ -804,134 +806,21 @@
                 position += pixelsPerFrame;
                 element.style.top = position + 'px';
 
-                // Si llegó al fondo
+                // Si llegó al fondo sin ser clickeado
                 if (position > window.innerHeight) {
                     clearInterval(fallInterval);
                     
-                    // Si era negativo y no fue destruido, resta puntos
-                    if (isNegative && element.dataset.destroyed === 'false') {
-                        updateScore(item.points);
+                    // Si era POSITIVO y NO lo clickearon, pierden puntos
+                    if (!isNegative && element.dataset.clicked === 'false') {
+                        updateScore(-5); // Penalización menor por dejar pasar buenos
                     }
-                    // Si era positivo y no fue destruido, no pasa nada (correcto)
+                    // Si era NEGATIVO y NO lo clickearon, correcto (no pasa nada)
                     
                     element.remove();
                 }
             }, 1000 / 60);
 
-            // Guardar el interval en el elemento
             element.fallInterval = fallInterval;
-        }
-
-        // Disparar bala
-        function shoot(fromSide) {
-            if (!gameActive) return;
-
-            playSound('shoot');
-
-            const bullet = document.createElement('div');
-            bullet.className = 'bullet';
-            
-            let shooterRect;
-            if (fromSide === 'left') {
-                bullet.textContent = '💧';
-                shooterRect = shooterLeft.getBoundingClientRect();
-            } else if (fromSide === 'right') {
-                bullet.textContent = '🥕';
-                shooterRect = shooterRight.getBoundingClientRect();
-            } else {
-                // Disparo desde el centro (cohete)
-                bullet.textContent = '🔥';
-                shooterRect = rocketCenter.getBoundingClientRect();
-            }
-            
-            bullet.style.left = (shooterRect.left + shooterRect.width / 2) + 'px';
-            bullet.style.top = (shooterRect.top - 20) + 'px';
-
-            gameArea.appendChild(bullet);
-
-            // Animación de bala hacia arriba
-            let bulletY = shooterRect.top - 20;
-            const bulletSpeed = 15; // Píxeles por frame
-            
-            const bulletInterval = setInterval(() => {
-                if (!gameActive) {
-                    clearInterval(bulletInterval);
-                    bullet.remove();
-                    return;
-                }
-
-                bulletY -= bulletSpeed;
-                bullet.style.top = bulletY + 'px';
-
-                // Verificar colisión con elementos negativos
-                checkCollision(bullet, bulletInterval);
-
-                // Si salió de la pantalla
-                if (bulletY < -50) {
-                    clearInterval(bulletInterval);
-                    bullet.remove();
-                }
-            }, 1000 / 60);
-        }
-
-        // Verificar colisión
-        function checkCollision(bullet, bulletInterval) {
-            const bulletRect = bullet.getBoundingClientRect();
-            // Detectar colisión con TODOS los elementos (positivos y negativos)
-            const items = document.querySelectorAll('.falling-item');
-
-            items.forEach(item => {
-                if (item.dataset.destroyed === 'true') return;
-
-                const itemRect = item.getBoundingClientRect();
-
-                // Margen de tolerancia AMPLIO para facilitar el impacto (40px extra)
-                const tolerance = 40;
-
-                // Detección de colisión con tolerancia generosa
-                if (bulletRect.left < itemRect.right + tolerance &&
-                    bulletRect.right > itemRect.left - tolerance &&
-                    bulletRect.top < itemRect.bottom + tolerance &&
-                    bulletRect.bottom > itemRect.top - tolerance) {
-                    
-                    // ¡Colisión!
-                    item.dataset.destroyed = 'true';
-                    
-                    // Hacer invisible inmediatamente
-                    item.style.opacity = '0';
-                    item.style.visibility = 'hidden';
-                    
-                    // Detener caída del item
-                    if (item.fallInterval) {
-                        clearInterval(item.fallInterval);
-                    }
-
-                    // Crear explosión
-                    createExplosion(itemRect.left + itemRect.width / 2, itemRect.top + itemRect.height / 2);
-
-                    // Verificar si es negativo o positivo
-                    const isNegative = item.dataset.negative === 'true';
-                    const points = parseInt(item.dataset.points);
-                    
-                    if (isNegative) {
-                        // Destruir negativo suma puntos
-                        updateScore(Math.abs(points));
-                    } else {
-                        // Destruir positivo resta puntos
-                        updateScore(-10); // Penalización por destruir elementos buenos
-                    }
-
-                    // Sonido de impacto
-                    playSound('hit');
-
-                    // Remover item del DOM
-                    setTimeout(() => item.remove(), 10);
-
-                    // Remover bala
-                    clearInterval(bulletInterval);
-                    bullet.remove();
-                }
-            });
         }
 
         // Crear explosión
@@ -957,11 +846,24 @@
                 endGame(false);
             }
 
-            // Actualizar nivel cada 100 puntos
+            // Actualizar nivel cada 100 puntos Y aumentar velocidad
             const newLevel = Math.floor(score / 100) + 1;
             if (newLevel !== level) {
                 level = newLevel;
                 levelDisplay.textContent = level;
+                
+                // Aumentar velocidad por nivel
+                gameSpeed = Math.max(2000, 6000 - (level * 500)); // Más rápido cada nivel
+                spawnInterval = Math.max(800, 2500 - (level * 200)); // Más frecuente cada nivel
+                
+                // Reiniciar timers con nueva velocidad
+                clearInterval(spawnTimerLeft);
+                clearInterval(spawnTimerCenter);
+                clearInterval(spawnTimerRight);
+                
+                spawnTimerLeft = setInterval(() => createFallingItem('left'), spawnInterval);
+                spawnTimerCenter = setInterval(() => createFallingItem('center'), spawnInterval);
+                spawnTimerRight = setInterval(() => createFallingItem('right'), spawnInterval);
             }
 
             gtag('event', 'score_update', {
@@ -980,24 +882,44 @@
                 } else if (type === 'hit') {
                     hitSound.currentTime = 0;
                     hitSound.play().catch(() => {});
+                } else if (type === 'tick') {
+                    // Usar hit sound como tick (o agregar tick-sound.mp3)
+                    const tickSound = new Audio();
+                    tickSound.volume = 0.5;
+                    tickSound.src = 'tick-sound.mp3';
+                    tickSound.play().catch(() => {});
                 }
             } catch (err) {}
         }
 
         // Actualizar cronómetro
         function updateTimer() {
-            const minutes = Math.floor(gameSeconds / 60);
-            const seconds = gameSeconds % 60;
+            const timeRemaining = gameTimeLimit - gameSeconds;
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
             timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Cambiar color cuando queden 5 segundos o menos
+            if (timeRemaining <= 5 && timeRemaining > 0) {
+                timerDisplay.style.color = '#F44336'; // Rojo
+                timerDisplay.style.animation = 'blink 0.5s ease-in-out infinite';
+            }
         }
 
-        // Iniciar cronómetro
+        // Iniciar cronómetro (cuenta regresiva)
         function startTimer() {
             gameSeconds = 0;
             updateTimer();
             gameTimer = setInterval(() => {
                 gameSeconds++;
                 updateTimer();
+                
+                const timeRemaining = gameTimeLimit - gameSeconds;
+                
+                // Sonido en los últimos 5 segundos
+                if (timeRemaining <= 5 && timeRemaining > 0) {
+                    playSound('tick');
+                }
                 
                 // Terminar juego después de 1 minuto
                 if (gameSeconds >= gameTimeLimit) {
@@ -1067,51 +989,6 @@
 
             // Iniciar spawn después del countdown
             setTimeout(() => {
-                // Mostrar texto de instrucción
-                const instructionText = document.createElement('div');
-                instructionText.className = 'instruction-text';
-                instructionText.textContent = '👇 Presiona los botones para disparar';
-                document.body.appendChild(instructionText);
-
-                // Crear dedos indicadores (apuntando hacia ABAJO 👇)
-                const fingers = [];
-                
-                // Dedo en pozol (izquierda) - ARRIBA del botón
-                const fingerLeft = document.createElement('div');
-                fingerLeft.className = 'finger-indicator';
-                fingerLeft.textContent = '👇';
-                const leftRect = shooterLeft.getBoundingClientRect();
-                fingerLeft.style.left = (leftRect.left + leftRect.width / 2 - 30) + 'px';
-                fingerLeft.style.top = (leftRect.top - 80) + 'px'; // Arriba del botón
-                document.body.appendChild(fingerLeft);
-                fingers.push(fingerLeft);
-
-                // Dedo en enojado (centro) - ARRIBA del botón
-                const fingerCenter = document.createElement('div');
-                fingerCenter.className = 'finger-indicator';
-                fingerCenter.textContent = '👇';
-                const centerRect = rocketCenter.getBoundingClientRect();
-                fingerCenter.style.left = (centerRect.left + centerRect.width / 2 - 30) + 'px';
-                fingerCenter.style.top = (centerRect.top - 80) + 'px'; // Arriba del botón
-                document.body.appendChild(fingerCenter);
-                fingers.push(fingerCenter);
-
-                // Dedo en conejo (derecha) - ARRIBA del botón
-                const fingerRight = document.createElement('div');
-                fingerRight.className = 'finger-indicator';
-                fingerRight.textContent = '👇';
-                const rightRect = shooterRight.getBoundingClientRect();
-                fingerRight.style.left = (rightRect.left + rightRect.width / 2 - 30) + 'px';
-                fingerRight.style.top = (rightRect.top - 80) + 'px'; // Arriba del botón
-                document.body.appendChild(fingerRight);
-                fingers.push(fingerRight);
-
-                // Remover todo después de 3 segundos
-                setTimeout(() => {
-                    instructionText.remove();
-                    fingers.forEach(finger => finger.remove());
-                }, 3000);
-
                 // Iniciar cronómetro
                 startTimer();
 
@@ -1145,31 +1022,30 @@
             const seconds = gameSeconds % 60;
             const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             
-            if (won) {
+            if (won || gameSeconds >= gameTimeLimit) {
                 // Victoria - Completó el minuto
-                gameoverTitle.textContent = '¡VICTORIA! 🎉';
+                gameoverTitle.textContent = '¡TIEMPO TERMINADO! ⏰';
                 gameoverTitle.className = 'win';
                 gameoverMessage.innerHTML = `
-                    ✨ ¡Defendiste el pozol durante ${timeStr}! ✨<br>
+                    ✨ ¡Completaste el desafío! ✨<br>
                     Puntuación final: ${score} puntos 🏆<br>
                     ¿Podrás superarme? ¡Demuestra que eres el mejor! 💪
                 `;
-                gameoverButtons.innerHTML = `
-                    <button class="share-btn" onclick="shareScore()" style="font-size: clamp(1.2rem, 5vw, 1.8rem); padding: 20px 45px;">📱 Compartir en WhatsApp</button>
-                    <button class="replay-btn" onclick="restartGame()">🔄 Jugar de nuevo</button>
-                `;
             } else {
-                // Derrota - Llegó a 0 puntos
-                gameoverTitle.textContent = '¡GAME OVER! 😔';
+                // Derrota - Llegó a 0 puntos antes del tiempo
+                gameoverTitle.textContent = '¡SE ACABÓ! 😔';
                 gameoverTitle.className = 'lose';
                 gameoverMessage.innerHTML = `
-                    Duraste ${timeStr} defendiendo el pozol<br>
-                    ¡Pero puedes hacerlo mejor! 💪
-                `;
-                gameoverButtons.innerHTML = `
-                    <button class="replay-btn" onclick="restartGame()">🔄 Intentar de nuevo</button>
+                    Duraste ${timeStr} en el desafío<br>
+                    ¡Inténtalo de nuevo y hazlo mejor! 💪
                 `;
             }
+            
+            // SIEMPRE mostrar botón de compartir
+            gameoverButtons.innerHTML = `
+                <button class="share-btn" onclick="shareScore()" style="font-size: clamp(1.2rem, 5vw, 1.8rem); padding: 20px 45px;">📱 Compartir en WhatsApp</button>
+                <button class="replay-btn" onclick="restartGame()">🔄 Jugar de nuevo</button>
+            `;
 
             gameoverModal.classList.add('show');
             campaignSong.pause();
@@ -1208,9 +1084,6 @@
 
         // Event Listeners
         startButton.addEventListener('click', startGame);
-        shooterLeft.addEventListener('click', () => shoot('left'));
-        shooterRight.addEventListener('click', () => shoot('right'));
-        rocketCenter.addEventListener('click', () => shoot('center'));
 
         window.addEventListener('load', () => {
             gtag('event', 'page_view', {
