@@ -1,719 +1,627 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>JS - El Juego del Pozol 🐰</title>
-
+    
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Righteous&family=Fredoka:wght@700&family=Titan+One&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Google Analytics -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-VHTS4Y8GQ8"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "G-VHTS4Y8GQ8");
-    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Fredoka:wght@700&family=Titan+One&display=swap" rel="stylesheet">
+    
+    <!-- Google Analytics - Configuración en analytics.js -->
+    <script src="analytics.js"></script>
 
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      body {
-        font-family: "Fredoka", "Arial", sans-serif;
-        overflow: hidden;
-        width: 100vw;
-        height: 100vh;
-        position: relative;
-        background: linear-gradient(135deg, #32a9b7 0%, #f04e85 100%);
-      }
-
-      /* Video de cámara frontal */
-      #video {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: 1;
-        transform: scaleX(-1);
-      }
-
-      /* Overlay */
-      .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          135deg,
-          rgba(50, 169, 183, 0.3) 0%,
-          rgba(240, 78, 133, 0.3) 100%
-        );
-        z-index: 2;
-        pointer-events: none;
-      }
-
-      /* Área de juego */
-      #gameArea {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 3;
-        pointer-events: none;
-      }
-
-      /* Logo JS - centro superior */
-      .logo {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-family: "Titan One", cursive;
-        font-size: clamp(2.5rem, 10vw, 4rem);
-        z-index: 10;
-        text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.5);
-      }
-
-      .logo .j {
-        color: #32a9b7;
-      }
-
-      .logo .s {
-        color: #f04e85;
-      }
-
-      /* Cronómetro - superior izquierda */
-      .timer-display {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        z-index: 10;
-        text-align: left;
-        background: rgba(255, 255, 255, 0.95);
-        padding: 15px 25px;
-        border-radius: 30px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-      }
-
-      .timer-label {
-        font-family: "Righteous", cursive;
-        font-size: clamp(0.7rem, 2.5vw, 0.9rem);
-        color: #32a9b7;
-        margin-bottom: 5px;
-      }
-
-      .timer-value {
-        font-family: "Titan One", cursive;
-        font-size: clamp(2rem, 7vw, 3rem);
-        color: #f04e85;
-        line-height: 1;
-      }
-
-      /* Puntuación - superior derecha */
-      .score-display {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10;
-        text-align: right;
-      }
-
-      .score-label {
-        font-family: "Righteous", cursive;
-        font-size: clamp(0.8rem, 3vw, 1rem);
-        color: white;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-        margin-bottom: 5px;
-      }
-
-      .score-value {
-        font-family: "Titan One", cursive;
-        font-size: clamp(2rem, 8vw, 3.5rem);
-        color: #ffd700;
-        text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.5);
-        line-height: 1;
-        margin-bottom: 5px;
-      }
-
-      .level-display {
-        font-family: "Righteous", cursive;
-        font-size: clamp(0.9rem, 3.5vw, 1.2rem);
-        color: #32a9b7;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 5px 15px;
-        border-radius: 20px;
-        display: inline-block;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-      }
-
-      /* Shooter - Pozol (izquierda) */
-      .shooter-left {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        width: clamp(80px, 15vw, 120px);
-        height: clamp(80px, 15vw, 120px);
-        cursor: pointer;
-        z-index: 10;
-        transition: transform 0.1s ease;
-        filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
-      }
-
-      .shooter-left:active {
-        transform: scale(0.9);
-      }
-
-      .shooter-left img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-      }
-
-      /* Shooter - Conejo (derecha) */
-      .shooter-right {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: clamp(80px, 15vw, 120px);
-        height: clamp(80px, 15vw, 120px);
-        cursor: pointer;
-        z-index: 10;
-        transition: transform 0.1s ease;
-        filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
-      }
-
-      .shooter-right:active {
-        transform: scale(0.9);
-      }
-
-      .shooter-right img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-      }
-
-      /* Animación llamativa para los shooters decorativos */
-      .shooter-left,
-      .shooter-right {
-        animation: bounce-pulse 2s ease-in-out infinite;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-
-      .shooter-left:hover,
-      .shooter-right:hover {
-        transform: scale(1.2) rotate(5deg);
-        filter: drop-shadow(0 15px 30px rgba(240, 78, 133, 1));
-      }
-
-      .shooter-left:active,
-      .shooter-right:active {
-        animation: shake 0.5s ease-in-out;
-      }
-
-      @keyframes bounce-pulse {
-        0%,
-        100% {
-          transform: scale(1) translateY(0);
-          filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
-        50% {
-          transform: scale(1.1) translateY(-10px);
-          filter: drop-shadow(0 10px 25px rgba(240, 78, 133, 0.8));
+
+        body {
+            font-family: 'Fredoka', 'Arial', sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(135deg, #32A9B7 0%, #F04E85 100%);
         }
-      }
 
-      @keyframes shake {
-        0%,
-        100% {
-          transform: translateX(0) rotate(0deg);
+        /* Video de cámara frontal */
+        #video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            transform: scaleX(-1);
         }
-        10%,
-        30%,
-        50%,
-        70%,
-        90% {
-          transform: translateX(-10px) rotate(-10deg);
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(50, 169, 183, 0.3) 0%, rgba(240, 78, 133, 0.3) 100%);
+            z-index: 2;
+            pointer-events: none;
         }
-        20%,
-        40%,
-        60%,
-        80% {
-          transform: translateX(10px) rotate(10deg);
+
+        /* Área de juego */
+        #gameArea {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
         }
-      }
 
-      @keyframes blink {
-        0%,
-        100% {
-          opacity: 1;
+        /* Logo JS - centro superior */
+        .logo {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Titan One', cursive;
+            font-size: clamp(2.5rem, 10vw, 4rem);
+            z-index: 10;
+            text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.5);
         }
-        50% {
-          opacity: 0.3;
+
+        .logo .j {
+            color: #32A9B7;
         }
-      }
 
-      /* Elementos que caen */
-      .falling-item {
-        position: absolute;
-        font-size: 35px;
-        pointer-events: auto; /* CLICKEABLES */
-        cursor: pointer;
-        user-select: none;
-        filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.4));
-        z-index: 4;
-        transition: transform 0.1s ease;
-        /* Área clickeable más grande */
-        padding: 15px;
-        margin: -15px; /* Compensar padding para mantener posición */
-      }
-
-      .falling-item:hover {
-        transform: scale(1.1);
-      }
-
-      .falling-item:active {
-        transform: scale(0.9);
-      }
-
-      .falling-item.word {
-        font-family: "Righteous", cursive;
-        font-weight: bold;
-        padding: 10px 20px;
-        border-radius: 15px;
-        font-size: clamp(16px, 4vw, 22px);
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        white-space: nowrap;
-        transition: all 0.2s ease;
-      }
-
-      .falling-item.positive.word {
-        background: rgba(76, 175, 80, 0.95);
-        color: white;
-        border: 3px solid #4caf50;
-      }
-
-      .falling-item.negative.word {
-        background: rgba(244, 67, 54, 0.95);
-        color: white;
-        border: 3px solid #f44336;
-      }
-
-      .falling-item.image {
-        width: 50px;
-        height: 50px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-      }
-
-      /* Bala/Proyectil */
-      .bullet {
-        position: absolute;
-        font-size: 30px;
-        z-index: 5;
-        pointer-events: none;
-        filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
-      }
-
-      /* Explosión */
-      .explosion {
-        position: absolute;
-        font-size: 50px;
-        z-index: 6;
-        pointer-events: none;
-        animation: explosion-anim 0.5s ease-out forwards;
-      }
-
-      @keyframes explosion-anim {
-        0% {
-          transform: scale(0.5);
-          opacity: 1;
+        .logo .s {
+            color: #F04E85;
         }
-        100% {
-          transform: scale(2);
-          opacity: 0;
+
+        /* Cronómetro - superior izquierda */
+        .timer-display {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
-      }
 
-      /* Modal de bienvenida */
-      .welcome-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.95);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        padding: 20px;
-      }
-
-      .welcome-modal.hidden {
-        display: none;
-      }
-
-      .welcome-modal h2 {
-        font-family: "Titan One", cursive;
-        font-size: clamp(2.5rem, 10vw, 5rem);
-        color: #f04e85;
-        text-shadow: 0 0 30px rgba(240, 78, 133, 0.8);
-        margin-bottom: 20px;
-        text-align: center;
-        line-height: 1.2;
-      }
-
-      .welcome-modal .instructions {
-        font-family: "Fredoka", sans-serif;
-        font-size: clamp(0.9rem, 3.5vw, 1.2rem);
-        color: white;
-        text-align: center;
-        margin-bottom: 30px;
-        max-width: 600px;
-        line-height: 1.5;
-      }
-
-      .welcome-modal button {
-        font-family: "Righteous", cursive;
-        font-size: clamp(1.3rem, 5vw, 2rem);
-        padding: 20px 50px;
-        background: linear-gradient(135deg, #32a9b7, #f04e85);
-        border: none;
-        border-radius: 50px;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 10px 30px rgba(240, 78, 133, 0.5);
-        transition: all 0.3s ease;
-        animation: pulse 2s ease-in-out infinite;
-      }
-
-      .welcome-modal button:hover {
-        transform: scale(1.1);
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(1);
+        .timer-label {
+            font-family: 'Righteous', cursive;
+            font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+            color: #32A9B7;
+            margin-bottom: 5px;
         }
-        50% {
-          transform: scale(1.05);
+
+        .timer-value {
+            font-family: 'Titan One', cursive;
+            font-size: clamp(2rem, 7vw, 3rem);
+            color: #F04E85;
+            line-height: 1;
         }
-      }
 
-      /* Modal de Game Over */
-      .gameover-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.95);
-        display: none;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        padding: 20px;
-      }
-
-      .gameover-modal.show {
-        display: flex;
-      }
-
-      .gameover-modal h2 {
-        font-family: "Titan One", cursive;
-        font-size: clamp(2rem, 8vw, 4rem);
-        margin-bottom: 20px;
-        text-align: center;
-      }
-
-      .gameover-modal h2.win {
-        color: #4caf50;
-      }
-
-      .gameover-modal h2.lose {
-        color: #f44336;
-      }
-
-      .gameover-modal .final-score {
-        font-family: "Titan One", cursive;
-        font-size: clamp(3rem, 12vw, 6rem);
-        color: #ffd700;
-        margin-bottom: 20px;
-      }
-
-      .gameover-modal .message {
-        font-family: "Righteous", cursive;
-        font-size: clamp(1rem, 4vw, 1.5rem);
-        color: white;
-        text-align: center;
-        margin-bottom: 30px;
-        max-width: 600px;
-        line-height: 1.4;
-      }
-
-      .gameover-modal .rabbit-animated {
-        font-size: clamp(3rem, 10vw, 5rem);
-        animation: bounce-rabbit 1s ease-in-out infinite;
-        margin-bottom: 30px;
-      }
-
-      @keyframes bounce-rabbit {
-        0%,
-        100% {
-          transform: translateY(0) rotate(-5deg);
+        /* Puntuación - superior derecha */
+        .score-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            text-align: right;
         }
-        50% {
-          transform: translateY(-20px) rotate(5deg);
+
+        .score-label {
+            font-family: 'Righteous', cursive;
+            font-size: clamp(0.8rem, 3vw, 1rem);
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            margin-bottom: 5px;
         }
-      }
 
-      .gameover-modal .buttons {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-
-      .gameover-modal button {
-        font-family: "Fredoka", sans-serif;
-        font-size: clamp(1rem, 4vw, 1.5rem);
-        padding: 15px 35px;
-        border: none;
-        border-radius: 50px;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-
-      .gameover-modal .share-btn {
-        background: #25d366;
-        box-shadow: 0 5px 20px rgba(37, 211, 102, 0.5);
-        font-size: clamp(1.2rem, 5vw, 1.8rem);
-        padding: 20px 45px;
-      }
-
-      .gameover-modal .replay-btn {
-        background: #f04e85;
-        box-shadow: 0 5px 20px rgba(240, 78, 133, 0.5);
-      }
-
-      .gameover-modal button:hover {
-        transform: scale(1.1);
-      }
-
-      /* Countdown */
-      .countdown {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-family: "Titan One", cursive;
-        font-size: clamp(4rem, 15vw, 8rem);
-        color: #f04e85;
-        text-shadow: 0 0 30px rgba(240, 78, 133, 0.8);
-        z-index: 999;
-        animation: countdown-pulse 1s ease-in-out;
-        pointer-events: none;
-      }
-
-      @keyframes countdown-pulse {
-        0% {
-          transform: translate(-50%, -50%) scale(0.5);
-          opacity: 0;
+        .score-value {
+            font-family: 'Titan One', cursive;
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            color: #FFD700;
+            text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.5);
+            line-height: 1;
+            margin-bottom: 5px;
         }
-        50% {
-          transform: translate(-50%, -50%) scale(1.2);
-          opacity: 1;
-        }
-        100% {
-          transform: translate(-50%, -50%) scale(1);
-          opacity: 0;
-        }
-      }
 
-      /* Dedo indicador */
-      .finger-indicator {
-        position: fixed;
-        font-size: 60px;
-        z-index: 999;
-        pointer-events: none;
-        animation: finger-tap 1.5s ease-in-out infinite;
-        filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
-      }
+        .level-display {
+            font-family: 'Righteous', cursive;
+            font-size: clamp(0.9rem, 3.5vw, 1.2rem);
+            color: #32A9B7;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
 
-      @keyframes finger-tap {
-        0%,
-        100% {
-          transform: scale(1) translateY(0);
+        /* Shooter - Pozol (izquierda) */
+        .shooter-left {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: clamp(80px, 15vw, 120px);
+            height: clamp(80px, 15vw, 120px);
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.1s ease;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
         }
-        50% {
-          transform: scale(0.9) translateY(10px);
-        }
-      }
 
-      /* Texto de instrucción */
-      .instruction-text {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-family: "Righteous", cursive;
-        font-size: clamp(1.5rem, 6vw, 3rem);
-        color: white;
-        background: rgba(0, 0, 0, 0.8);
-        padding: 20px 40px;
-        border-radius: 20px;
-        z-index: 998;
-        pointer-events: none;
-        text-align: center;
-        animation: fade-in-out 3s ease-in-out;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      }
+        .shooter-left:active {
+            transform: scale(0.9);
+        }
 
-      @keyframes fade-in-out {
-        0% {
-          opacity: 0;
-          transform: translate(-50%, -50%) scale(0.8);
+        .shooter-left img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
-        20% {
-          opacity: 1;
-          transform: translate(-50%, -50%) scale(1);
-        }
-        80% {
-          opacity: 1;
-          transform: translate(-50%, -50%) scale(1);
-        }
-        100% {
-          opacity: 0;
-          transform: translate(-50%, -50%) scale(0.8);
-        }
-      }
 
-      /* Responsive */
-      @media (max-width: 768px) {
+        /* Shooter - Conejo (derecha) */
+        .shooter-right {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: clamp(80px, 15vw, 120px);
+            height: clamp(80px, 15vw, 120px);
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.1s ease;
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+        }
+
+        .shooter-right:active {
+            transform: scale(0.9);
+        }
+
+        .shooter-right img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Animación llamativa para los shooters decorativos */
         .shooter-left,
         .shooter-right {
-          width: clamp(70px, 18vw, 100px);
-          height: clamp(70px, 18vw, 100px);
-          bottom: 15px;
+            animation: bounce-pulse 2s ease-in-out infinite;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .shooter-left {
-          left: 15px;
-        }
-        .shooter-right {
-          right: 15px;
-        }
-
-        .rocket-center {
-          font-size: clamp(50px, 15vw, 80px);
+        .shooter-left:hover,
+        .shooter-right:hover {
+            transform: scale(1.2) rotate(5deg);
+            filter: drop-shadow(0 15px 30px rgba(240, 78, 133, 1));
         }
 
+        .shooter-left:active,
+        .shooter-right:active {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes bounce-pulse {
+            0%, 100% { 
+                transform: scale(1) translateY(0);
+                filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+            }
+            50% { 
+                transform: scale(1.1) translateY(-10px);
+                filter: drop-shadow(0 10px 25px rgba(240, 78, 133, 0.8));
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px) rotate(-10deg); }
+            20%, 40%, 60%, 80% { transform: translateX(10px) rotate(10deg); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Elementos que caen */
         .falling-item {
-          font-size: 30px;
+            position: absolute;
+            font-size: 35px;
+            pointer-events: auto; /* CLICKEABLES */
+            cursor: pointer;
+            user-select: none;
+            filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.4));
+            z-index: 4;
+            transition: transform 0.1s ease;
+            /* Área clickeable más grande */
+            padding: 15px;
+            margin: -15px; /* Compensar padding para mantener posición */
+        }
+
+        .falling-item:hover {
+            transform: scale(1.1);
+        }
+
+        .falling-item:active {
+            transform: scale(0.9);
         }
 
         .falling-item.word {
-          font-size: 16px;
-          padding: 6px 12px;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .shooter-left,
-        .shooter-right {
-          width: clamp(60px, 20vw, 80px);
-          height: clamp(60px, 20vw, 80px);
-          bottom: 10px;
+            font-family: 'Righteous', cursive;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-size: clamp(16px, 4vw, 22px);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+            transition: all 0.2s ease;
         }
 
-        .shooter-left {
-          left: 10px;
-        }
-        .shooter-right {
-          right: 10px;
-        }
-
-        .logo {
-          top: 15px;
-          font-size: clamp(2rem, 12vw, 3rem);
+        .falling-item.positive.word {
+            background: rgba(76, 175, 80, 0.95);
+            color: white;
+            border: 3px solid #4CAF50;
         }
 
-        .score-display {
-          top: 15px;
-          right: 15px;
-        }
-      }
-
-      @media (max-height: 500px) and (orientation: landscape) {
-        .shooter-left,
-        .shooter-right {
-          width: 60px;
-          height: 60px;
+        .falling-item.negative.word {
+            background: rgba(244, 67, 54, 0.95);
+            color: white;
+            border: 3px solid #F44336;
         }
 
-        .rocket-center {
-          font-size: 50px;
+        .falling-item.image {
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
-        .logo {
-          font-size: 2rem;
+        /* Bala/Proyectil */
+        .bullet {
+            position: absolute;
+            font-size: 30px;
+            z-index: 5;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
         }
-      }
+
+        /* Explosión */
+        .explosion {
+            position: absolute;
+            font-size: 50px;
+            z-index: 6;
+            pointer-events: none;
+            animation: explosion-anim 0.5s ease-out forwards;
+        }
+
+        @keyframes explosion-anim {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        /* Modal de bienvenida */
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .welcome-modal.hidden {
+            display: none;
+        }
+
+        .welcome-modal h2 {
+            font-family: 'Titan One', cursive;
+            font-size: clamp(2.5rem, 10vw, 5rem);
+            color: #F04E85;
+            text-shadow: 0 0 30px rgba(240, 78, 133, 0.8);
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .welcome-modal .instructions {
+            font-family: 'Fredoka', sans-serif;
+            font-size: clamp(0.9rem, 3.5vw, 1.2rem);
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+
+        .welcome-modal button {
+            font-family: 'Righteous', cursive;
+            font-size: clamp(1.3rem, 5vw, 2rem);
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #32A9B7, #F04E85);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(240, 78, 133, 0.5);
+            transition: all 0.3s ease;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .welcome-modal button:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Modal de Game Over */
+        .gameover-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .gameover-modal.show {
+            display: flex;
+        }
+
+        .gameover-modal h2 {
+            font-family: 'Titan One', cursive;
+            font-size: clamp(2rem, 8vw, 4rem);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .gameover-modal h2.win {
+            color: #4CAF50;
+        }
+
+        .gameover-modal h2.lose {
+            color: #F44336;
+        }
+
+        .gameover-modal .final-score {
+            font-family: 'Titan One', cursive;
+            font-size: clamp(3rem, 12vw, 6rem);
+            color: #FFD700;
+            margin-bottom: 20px;
+        }
+
+        .gameover-modal .message {
+            font-family: 'Righteous', cursive;
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            max-width: 600px;
+            line-height: 1.4;
+        }
+
+        .gameover-modal .rabbit-animated {
+            font-size: clamp(3rem, 10vw, 5rem);
+            animation: bounce-rabbit 1s ease-in-out infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes bounce-rabbit {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .gameover-modal .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .gameover-modal button {
+            font-family: 'Fredoka', sans-serif;
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gameover-modal .share-btn {
+            background: #25D366;
+            box-shadow: 0 5px 20px rgba(37, 211, 102, 0.5);
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
+            padding: 20px 45px;
+        }
+
+        .gameover-modal .replay-btn {
+            background: #F04E85;
+            box-shadow: 0 5px 20px rgba(240, 78, 133, 0.5);
+        }
+
+        .gameover-modal button:hover {
+            transform: scale(1.1);
+        }
+
+        /* Countdown */
+        .countdown {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Titan One', cursive;
+            font-size: clamp(4rem, 15vw, 8rem);
+            color: #F04E85;
+            text-shadow: 0 0 30px rgba(240, 78, 133, 0.8);
+            z-index: 999;
+            animation: countdown-pulse 1s ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes countdown-pulse {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+
+        /* Dedo indicador */
+        .finger-indicator {
+            position: fixed;
+            font-size: 60px;
+            z-index: 999;
+            pointer-events: none;
+            animation: finger-tap 1.5s ease-in-out infinite;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
+        }
+
+        @keyframes finger-tap {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(0.9) translateY(10px); }
+        }
+
+        /* Texto de instrucción */
+        .instruction-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Righteous', cursive;
+            font-size: clamp(1.5rem, 6vw, 3rem);
+            color: white;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border-radius: 20px;
+            z-index: 998;
+            pointer-events: none;
+            text-align: center;
+            animation: fade-in-out 3s ease-in-out;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes fade-in-out {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .shooter-left, .shooter-right {
+                width: clamp(70px, 18vw, 100px);
+                height: clamp(70px, 18vw, 100px);
+                bottom: 15px;
+            }
+
+            .shooter-left { left: 15px; }
+            .shooter-right { right: 15px; }
+
+            .rocket-center {
+                font-size: clamp(50px, 15vw, 80px);
+            }
+
+            .falling-item {
+                font-size: 30px;
+            }
+
+            .falling-item.word {
+                font-size: 16px;
+                padding: 6px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .shooter-left, .shooter-right {
+                width: clamp(60px, 20vw, 80px);
+                height: clamp(60px, 20vw, 80px);
+                bottom: 10px;
+            }
+
+            .shooter-left { left: 10px; }
+            .shooter-right { right: 10px; }
+
+            .logo {
+                top: 15px;
+                font-size: clamp(2rem, 12vw, 3rem);
+            }
+
+            .score-display {
+                top: 15px;
+                right: 15px;
+            }
+        }
+
+        @media (max-height: 500px) and (orientation: landscape) {
+            .shooter-left, .shooter-right {
+                width: 60px;
+                height: 60px;
+            }
+
+            .rocket-center {
+                font-size: 50px;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <!-- Video de cámara frontal -->
     <video id="video" autoplay playsinline></video>
-
+    
     <!-- Overlay -->
     <div class="overlay"></div>
 
     <!-- Cronómetro -->
     <div class="timer-display">
-      <div class="timer-label">⏱️ TIEMPO</div>
-      <div class="timer-value" id="timerDisplay">0:00</div>
+        <div class="timer-label">⏱️ TIEMPO</div>
+        <div class="timer-value" id="timerDisplay">0:00</div>
     </div>
 
     <!-- Logo JS -->
-    <div class="logo"><span class="j">J</span><span class="s">S</span></div>
+    <div class="logo">
+        <span class="j">J</span><span class="s">S</span>
+    </div>
 
     <!-- Puntuación y Nivel -->
     <div class="score-display">
-      <div class="score-label">PUNTUACIÓN</div>
-      <div class="score-value" id="scoreDisplay">100</div>
-      <div class="level-display">NIVEL <span id="levelDisplay">1</span></div>
+        <div class="score-label">PUNTUACIÓN</div>
+        <div class="score-value" id="scoreDisplay">100</div>
+        <div class="level-display">NIVEL <span id="levelDisplay">1</span></div>
     </div>
 
     <!-- Área de juego -->
@@ -721,608 +629,591 @@
 
     <!-- Shooters (solo decorativos) -->
     <div class="shooter-left" id="shooterLeft">
-      <img src="jicara.png" alt="Pozol" />
+        <img src="jicara.png" alt="Pozol">
     </div>
 
     <div class="shooter-right" id="shooterRight">
-      <img src="conejo.png" alt="Conejo" />
+        <img src="conejo.png" alt="Conejo">
     </div>
 
     <!-- Modal de bienvenida -->
     <div class="welcome-modal" id="welcomeModal">
-      <h2>🐰 ATRAPA EL POZOL 🐰</h2>
-      <div class="instructions">
-        <p>
-          ⏱️
-          <strong>Tienes 2 MINUTOS - ¡Clickea lo más rápido que puedas!</strong>
-        </p>
-        <p>
-          ✅ <strong>CLICKEA lo BUENO:</strong> 🟢 Palabras verdes y emoticons
-          positivos
-        </p>
-        <p>
-          ❌ <strong>NO clickees lo MALO:</strong> 🔴 Palabras rojas y emoticons
-          negativos
-        </p>
-        <p>🏆 Cada click correcto = +puntos | Click incorrecto = -puntos</p>
-        <p>⚠️ ¡A partir del nivel 2 todo cae más rápido!</p>
-      </div>
-      <button id="startButton">¡JUGAR! 🎮</button>
+        <h2>🐰 ATRAPA EL POZOL 🐰</h2>
+        <div class="instructions">
+            <p>⏱️ <strong>Tienes 2 MINUTOS - ¡Clickea lo más rápido que puedas!</strong></p>
+            <p>✅ <strong>CLICKEA lo BUENO:</strong> 🟢 Palabras verdes y emoticons positivos</p>
+            <p>❌ <strong>NO clickees lo MALO:</strong> 🔴 Palabras rojas y emoticons negativos</p>
+            <p>🏆 Cada click correcto = +puntos | Click incorrecto = -puntos</p>
+            <p>⚠️ ¡A partir del nivel 2 todo cae más rápido!</p>
+        </div>
+        <button id="startButton">¡JUGAR! 🎮</button>
     </div>
 
     <!-- Modal de Game Over -->
     <div class="gameover-modal" id="gameoverModal">
-      <h2 id="gameoverTitle">¡JUEGO TERMINADO!</h2>
-      <div class="final-score" id="finalScore">0</div>
-      <div class="rabbit-animated">🐰</div>
-      <div class="message" id="gameoverMessage"></div>
-      <div class="buttons" id="gameoverButtons"></div>
+        <h2 id="gameoverTitle">¡JUEGO TERMINADO!</h2>
+        <div class="final-score" id="finalScore">0</div>
+        <div class="rabbit-animated">🐰</div>
+        <div class="message" id="gameoverMessage"></div>
+        <div class="buttons" id="gameoverButtons"></div>
     </div>
 
     <!-- Audio -->
-    <audio id="campaignSong" style="display: none" loop autoplay>
-      <source src="cancion-giovani.mp3" type="audio/mpeg" />
+    <audio id="campaignSong" style="display: none;" loop autoplay>
+        <source src="cancion-giovani.mp3" type="audio/mpeg">
     </audio>
-    <audio id="shootSound" style="display: none" preload="auto">
-      <source src="shoot-sound.mp3" type="audio/mpeg" />
+    <audio id="shootSound" style="display: none;" preload="auto">
+        <source src="shoot-sound.mp3" type="audio/mpeg">
     </audio>
-    <audio id="hitSound" style="display: none" preload="auto">
-      <source src="hit-sound.mp3" type="audio/mpeg" />
+    <audio id="hitSound" style="display: none;" preload="auto">
+        <source src="hit-sound.mp3" type="audio/mpeg">
     </audio>
 
     <script>
-      // Variables globales
-      let score = 100; // Empezar con 100 puntos
-      let level = 1;
-      let gameActive = false;
-      let cameraActive = false;
-      let gameSpeed = 6000; // Velocidad inicial de caída
-      let spawnInterval = 1500; // Velocidad de aparición (más rápido)
-      let difficultyTimer;
-      let gameTimer; // Timer del cronómetro
-      let gameSeconds = 0; // Segundos transcurridos
-      let gameTimeLimit = 120; // Límite de 2 minutos (120 segundos)
+        // Variables globales
+        let score = 100; // Empezar con 100 puntos
+        let level = 1;
+        let gameActive = false;
+        let cameraActive = false;
+        let gameSpeed = 6000; // Velocidad inicial de caída
+        let spawnInterval = 1500; // Velocidad de aparición (más rápido)
+        let difficultyTimer;
+        let gameTimer; // Timer del cronómetro
+        let gameSeconds = 0; // Segundos transcurridos
+        let gameTimeLimit = 120; // Límite de 2 minutos (120 segundos)
+        
+        const video = document.getElementById('video');
+        const gameArea = document.getElementById('gameArea');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const welcomeModal = document.getElementById('welcomeModal');
+        const gameoverModal = document.getElementById('gameoverModal');
+        const gameoverTitle = document.getElementById('gameoverTitle');
+        const finalScore = document.getElementById('finalScore');
+        const gameoverMessage = document.getElementById('gameoverMessage');
+        const gameoverButtons = document.getElementById('gameoverButtons');
+        const startButton = document.getElementById('startButton');
+        const shooterLeft = document.getElementById('shooterLeft');
+        const shooterRight = document.getElementById('shooterRight');
+        const campaignSong = document.getElementById('campaignSong');
+        const shootSound = document.getElementById('shootSound');
+        const hitSound = document.getElementById('hitSound');
 
-      const video = document.getElementById("video");
-      const gameArea = document.getElementById("gameArea");
-      const scoreDisplay = document.getElementById("scoreDisplay");
-      const levelDisplay = document.getElementById("levelDisplay");
-      const timerDisplay = document.getElementById("timerDisplay");
-      const welcomeModal = document.getElementById("welcomeModal");
-      const gameoverModal = document.getElementById("gameoverModal");
-      const gameoverTitle = document.getElementById("gameoverTitle");
-      const finalScore = document.getElementById("finalScore");
-      const gameoverMessage = document.getElementById("gameoverMessage");
-      const gameoverButtons = document.getElementById("gameoverButtons");
-      const startButton = document.getElementById("startButton");
-      const shooterLeft = document.getElementById("shooterLeft");
-      const shooterRight = document.getElementById("shooterRight");
-      const campaignSong = document.getElementById("campaignSong");
-      const shootSound = document.getElementById("shootSound");
-      const hitSound = document.getElementById("hitSound");
+        // Elementos positivos (caen en los lados)
+        const positiveItems = [
+            { type: 'word', content: '✨🐰🐰 CONEJO 🐰🐰✨', points: 25 },
+            { type: 'word', content: '🔥🐰 JS 🐰🔥', points: 30 },
+            { type: 'word', content: '✨🐰 POZOL 🐰✨', points: 25 },
+            { type: 'word', content: '🐰 trabajo 🐰', points: 10 },
+            { type: 'word', content: '🐰 esfuerzo 🐰', points: 10 },
+            { type: 'word', content: '🐰 compromiso 🐰', points: 10 },
+            { type: 'word', content: '🐰 honestidad 🐰', points: 10 },
+            { type: 'word', content: '🐰 respeto 🐰', points: 10 },
+            { type: 'word', content: '🐰 cercanía 🐰', points: 10 },
+            { type: 'word', content: '🐰 palabra 🐰', points: 10 },
+            { type: 'word', content: '🐰 congruencia 🐰', points: 10 },
+            { type: 'word', content: '🐰 Tuxtla 🐰', points: 15 },
+            { type: 'word', content: '🐰 visión 🐰', points: 10 },
+            { type: 'word', content: '🐰 futuro 🐰', points: 10 },
+            { type: 'word', content: '🐰 comunidad 🐰', points: 10 },
+            { type: 'word', content: '🐰 progreso 🐰', points: 10 },
+            { type: 'word', content: '🐰 unión 🐰', points: 10 },
+            { type: 'word', content: '🐰 confianza 🐰', points: 10 },
+            { type: 'word', content: '🐰 bienestar 🐰', points: 10 }
+        ];
 
-      // Elementos positivos (caen en los lados)
-      const positiveItems = [
-        { type: "word", content: "✨🐰🐰 CONEJO 🐰🐰✨", points: 25 },
-        { type: "word", content: "🔥🐰 JS 🐰🔥", points: 30 },
-        { type: "word", content: "✨🐰 POZOL 🐰✨", points: 25 },
-        { type: "word", content: "🐰 trabajo 🐰", points: 10 },
-        { type: "word", content: "🐰 esfuerzo 🐰", points: 10 },
-        { type: "word", content: "🐰 compromiso 🐰", points: 10 },
-        { type: "word", content: "🐰 honestidad 🐰", points: 10 },
-        { type: "word", content: "🐰 respeto 🐰", points: 10 },
-        { type: "word", content: "🐰 cercanía 🐰", points: 10 },
-        { type: "word", content: "🐰 palabra 🐰", points: 10 },
-        { type: "word", content: "🐰 congruencia 🐰", points: 10 },
-        { type: "word", content: "🐰 Tuxtla 🐰", points: 15 },
-        { type: "word", content: "🐰 visión 🐰", points: 10 },
-        { type: "word", content: "🐰 futuro 🐰", points: 10 },
-        { type: "word", content: "🐰 comunidad 🐰", points: 10 },
-        { type: "word", content: "🐰 progreso 🐰", points: 10 },
-        { type: "word", content: "🐰 unión 🐰", points: 10 },
-        { type: "word", content: "🐰 confianza 🐰", points: 10 },
-        { type: "word", content: "🐰 bienestar 🐰", points: 10 },
-      ];
+        // Elementos negativos (caen en el centro)
+        const negativeItems = [
+            { type: 'word', content: '❌ robar ❌', points: -15 },
+            { type: 'word', content: '❌ mentir ❌', points: -15 },
+            { type: 'word', content: '❌ engañar ❌', points: -15 },
+            { type: 'word', content: '❌ traición ❌', points: -20 },
+            { type: 'word', content: '❌ abuso ❌', points: -20 },
+            { type: 'word', content: '❌ corrupción ❌', points: -25 },
+            { type: 'word', content: '❌ soberbia ❌', points: -15 },
+            { type: 'word', content: '❌ cinismo ❌', points: -15 },
+            { type: 'word', content: '❌ indiferencia ❌', points: -15 },
+            { type: 'word', content: '❌ egoísmo ❌', points: -15 },
+            { type: 'word', content: '❌ simulación ❌', points: -15 },
+            { type: 'word', content: '❌ promesas ❌', points: -15 },
+            { type: 'word', content: '❌ imposición ❌', points: -15 },
+            { type: 'word', content: '❌ opacidad ❌', points: -15 },
+            { type: 'word', content: '❌ favoritismo ❌', points: -15 },
+            { type: 'word', content: '❌ manipular ❌', points: -20 }
+        ];
 
-      // Elementos negativos (caen en el centro)
-      const negativeItems = [
-        { type: "word", content: "❌ robar ❌", points: -15 },
-        { type: "word", content: "❌ mentir ❌", points: -15 },
-        { type: "word", content: "❌ engañar ❌", points: -15 },
-        { type: "word", content: "❌ traición ❌", points: -20 },
-        { type: "word", content: "❌ abuso ❌", points: -20 },
-        { type: "word", content: "❌ corrupción ❌", points: -25 },
-        { type: "word", content: "❌ soberbia ❌", points: -15 },
-        { type: "word", content: "❌ cinismo ❌", points: -15 },
-        { type: "word", content: "❌ indiferencia ❌", points: -15 },
-        { type: "word", content: "❌ egoísmo ❌", points: -15 },
-        { type: "word", content: "❌ simulación ❌", points: -15 },
-        { type: "word", content: "❌ promesas ❌", points: -15 },
-        { type: "word", content: "❌ imposición ❌", points: -15 },
-        { type: "word", content: "❌ opacidad ❌", points: -15 },
-        { type: "word", content: "❌ favoritismo ❌", points: -15 },
-        { type: "word", content: "❌ manipular ❌", points: -20 },
-      ];
-
-      // Iniciar cámara
-      async function startCamera() {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "user" },
-            audio: false,
-          });
-          video.srcObject = stream;
-          cameraActive = true;
-        } catch (err) {
-          console.error("Error al acceder a la cámara:", err);
-        }
-      }
-
-      // Crear elemento que cae (TODOS clickeables)
-      function createFallingItem(lane) {
-        if (!gameActive) return;
-
-        // Mix aleatorio de positivos y negativos en TODO el ancho
-        const isNegative = Math.random() > 0.5;
-        const items = isNegative ? negativeItems : positiveItems;
-        const item = items[Math.floor(Math.random() * items.length)];
-
-        const element = document.createElement("div");
-        element.className = `falling-item ${isNegative ? "negative" : "positive"} word`;
-        element.textContent = item.content;
-
-        element.dataset.negative = isNegative;
-        element.dataset.points = item.points;
-        element.dataset.clicked = "false";
-
-        // Posición aleatoria en TODO el ancho (sin verificación de colisiones)
-        const xPosition = 30 + Math.random() * (window.innerWidth - 300);
-        const yPosition = -150;
-
-        element.style.left = xPosition + "px";
-        element.style.top = yPosition + "px";
-        element.style.zIndex = Math.floor(Math.random() * 100) + 10;
-
-        gameArea.appendChild(element);
-
-        // Click en el elemento
-        let hasBeenClicked = false;
-
-        const clickHandler = function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-
-          if (hasBeenClicked) return;
-          hasBeenClicked = true;
-          element.dataset.clicked = "true";
-
-          // Detener caída inmediatamente
-          if (element.fallInterval) {
-            clearInterval(element.fallInterval);
-          }
-
-          const isNeg = element.dataset.negative === "true";
-          const pts = parseInt(element.dataset.points);
-
-          if (isNeg) {
-            // Clickeó elemento NEGATIVO = RESTA puntos
-            updateScore(pts);
-            playSound("shoot");
-            element.style.transform = "scale(0.5) rotate(180deg)";
-          } else {
-            // Clickeó elemento POSITIVO = SUMA puntos
-            updateScore(pts);
-            playSound("hit");
-            createExplosion(
-              element.getBoundingClientRect().left + element.offsetWidth / 2,
-              element.getBoundingClientRect().top + element.offsetHeight / 2,
-            );
-            element.style.transform = "scale(1.5) rotate(360deg)";
-          }
-
-          // Remover inmediatamente
-          element.style.opacity = "0";
-          element.style.pointerEvents = "none";
-
-          setTimeout(() => {
-            element.removeEventListener("mousedown", clickHandler);
-            element.removeEventListener("touchstart", clickHandler);
-            element.remove();
-          }, 300);
-        };
-
-        // Soportar tanto mouse como touch
-        element.addEventListener("mousedown", clickHandler);
-        element.addEventListener("touchstart", clickHandler, {
-          passive: false,
-        });
-
-        // Animación de caída
-        let position = yPosition;
-        const screenHeight = window.innerHeight;
-        const totalDistance = screenHeight + 150;
-        const pixelsPerFrame = totalDistance / (gameSpeed / (1000 / 60));
-
-        const fallInterval = setInterval(() => {
-          if (!gameActive) {
-            clearInterval(fallInterval);
-            element.remove();
-            return;
-          }
-
-          position += pixelsPerFrame;
-          element.style.top = position + "px";
-
-          // Si llegó MÁS ALLÁ del fondo de la pantalla
-          if (position > screenHeight + 100) {
-            clearInterval(fallInterval);
-
-            // Remover elemento
-            if (!hasBeenClicked) {
-              element.remove();
+        // Iniciar cámara
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' },
+                    audio: false
+                });
+                video.srcObject = stream;
+                cameraActive = true;
+            } catch (err) {
+                console.error('Error al acceder a la cámara:', err);
             }
-          }
-        }, 1000 / 60);
-
-        element.fallInterval = fallInterval;
-      }
-
-      // Crear explosión
-      function createExplosion(x, y) {
-        const explosion = document.createElement("div");
-        explosion.className = "explosion";
-        explosion.textContent = "💥";
-        explosion.style.left = x + "px";
-        explosion.style.top = y + "px";
-        gameArea.appendChild(explosion);
-
-        setTimeout(() => explosion.remove(), 500);
-      }
-
-      // Emitir conejos decorativos desde pozol o conejo
-      function emitBunnies(element, direction = "right") {
-        const rect = element.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
-        // Crear entre 5 y 8 conejos
-        const numBunnies = 5 + Math.floor(Math.random() * 4);
-
-        for (let i = 0; i < numBunnies; i++) {
-          setTimeout(() => {
-            const bunny = document.createElement("div");
-            bunny.textContent = "🐰";
-            bunny.style.position = "fixed";
-            bunny.style.left = centerX + "px";
-            bunny.style.top = centerY + "px";
-            bunny.style.fontSize = "30px";
-            bunny.style.zIndex = "999";
-            bunny.style.pointerEvents = "none";
-            bunny.style.transition = "all 1s ease-out";
-
-            document.body.appendChild(bunny);
-
-            // Animar hacia arriba y a los lados según la dirección
-            setTimeout(() => {
-              let angle;
-              if (direction === "left") {
-                // Para conejo derecho: emitir hacia la IZQUIERDA (120° a 240°)
-                angle = 120 + Math.random() * 120; // 120 a 240 grados
-              } else {
-                // Para pozol izquierdo: emitir hacia la DERECHA (-60° a 60°)
-                angle = Math.random() * 120 - 60; // -60 a 60 grados
-              }
-
-              const distance = 150 + Math.random() * 100; // 150-250px
-              const radians = (angle * Math.PI) / 180;
-
-              bunny.style.transform = `translate(${Math.cos(radians) * distance}px, ${-Math.abs(Math.sin(radians) * distance) - 100}px) rotate(${angle * 2}deg) scale(0.5)`;
-              bunny.style.opacity = "0";
-            }, 10);
-
-            setTimeout(() => bunny.remove(), 1100);
-          }, i * 50); // Delay entre cada conejo
-        }
-      }
-
-      // Actualizar puntuación
-      function updateScore(points) {
-        score += points;
-        if (score < 0) score = 0;
-        scoreDisplay.textContent = score;
-
-        // Verificar game over
-        if (score <= 0) {
-          endGame(false);
         }
 
-        // Actualizar nivel cada 100 puntos Y aumentar velocidad
-        const newLevel = Math.floor(score / 100) + 1;
-        if (newLevel !== level) {
-          level = newLevel;
-          levelDisplay.textContent = level;
-
-          // Aumentar velocidad por nivel
-          gameSpeed = Math.max(2000, 6000 - level * 500); // Más rápido cada nivel
-          spawnInterval = Math.max(600, 1500 - level * 150); // Más frecuente cada nivel
-        }
-
-        gtag("event", "score_update", {
-          event_category: "game",
-          event_label: "Score",
-          value: score,
-        });
-      }
-
-      // Reproducir sonido
-      function playSound(type) {
-        try {
-          if (type === "shoot") {
-            shootSound.currentTime = 0;
-            shootSound.play().catch(() => {});
-          } else if (type === "hit") {
-            hitSound.currentTime = 0;
-            hitSound.play().catch(() => {});
-          } else if (type === "tick") {
-            // Usar hit sound como tick (o agregar tick-sound.mp3)
-            const tickSound = new Audio();
-            tickSound.volume = 0.5;
-            tickSound.src = "tick-sound.mp3";
-            tickSound.play().catch(() => {});
-          }
-        } catch (err) {}
-      }
-
-      // Actualizar cronómetro
-      function updateTimer() {
-        const timeRemaining = gameTimeLimit - gameSeconds;
-        const minutes = Math.floor(timeRemaining / 60);
-        const seconds = timeRemaining % 60;
-        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-
-        // Cambiar color cuando queden 10 segundos o menos
-        if (timeRemaining <= 10 && timeRemaining > 0) {
-          timerDisplay.style.color = "#F44336"; // Rojo
-          timerDisplay.style.animation = "blink 0.5s ease-in-out infinite";
-        }
-      }
-
-      // Iniciar cronómetro (cuenta regresiva)
-      function startTimer() {
-        gameSeconds = 0;
-        updateTimer();
-        gameTimer = setInterval(() => {
-          gameSeconds++;
-          updateTimer();
-
-          const timeRemaining = gameTimeLimit - gameSeconds;
-
-          // Sonido en los últimos 5 segundos
-          if (timeRemaining <= 5 && timeRemaining > 0) {
-            playSound("tick");
-          }
-
-          // Terminar juego después de 2 minutos
-          if (gameSeconds >= gameTimeLimit) {
-            endGame(true); // Victoria por completar los 2 minutos
-          }
-        }, 1000);
-      }
-
-      // Detener cronómetro
-      function stopTimer() {
-        if (gameTimer) {
-          clearInterval(gameTimer);
-        }
-      }
-
-      // Aumentar dificultad
-      function increaseDifficulty() {
-        difficultyTimer = setInterval(() => {
-          if (gameSpeed > 2000) {
-            gameSpeed -= 200;
-          }
-          if (spawnInterval > 600) {
-            spawnInterval -= 100;
-          }
-          // El spawn se ajusta automáticamente con la variable spawnInterval
-        }, 20000);
-      }
-
-      // Iniciar juego
-      function startGame() {
-        welcomeModal.classList.add("hidden");
-        gameActive = true;
-        score = 100;
-        level = 1;
-        gameSpeed = 6000;
-        spawnInterval = 1500; // Más rápido desde el inicio
-        scoreDisplay.textContent = "100";
-        levelDisplay.textContent = "1";
-
-        startCamera();
-
-        // Reproducir música en loop (nunca se detiene hasta game over)
-        campaignSong.loop = true;
-        campaignSong.play().catch(() => {
-          // Si falla el autoplay, intentar de nuevo en el primer click
-          document.addEventListener(
-            "click",
-            () => {
-              campaignSong.play().catch(() => {});
-            },
-            { once: true },
-          );
-        });
-
-        // Countdown
-        let countdownNum = 3;
-        const countdownElement = document.createElement("div");
-        countdownElement.className = "countdown";
-        countdownElement.textContent = countdownNum;
-        document.body.appendChild(countdownElement);
-
-        const countdownInterval = setInterval(() => {
-          countdownNum--;
-          if (countdownNum > 0) {
-            countdownElement.textContent = countdownNum;
-          } else {
-            countdownElement.textContent = "¡ATRAPA!";
-            clearInterval(countdownInterval);
-            setTimeout(() => countdownElement.remove(), 1000);
-          }
-        }, 1000);
-
-        // Iniciar spawn después del countdown (inmediatamente después de "¡ATRAPA!")
-        setTimeout(() => {
-          // Iniciar cronómetro
-          startTimer();
-
-          // UN SOLO TIMER que crea elementos con delay entre cada uno
-          let spawnDelay = 0;
-          const baseSpawnInterval = spawnInterval;
-
-          function scheduleNextSpawn() {
+        // Crear elemento que cae (TODOS clickeables)
+        function createFallingItem(lane) {
             if (!gameActive) return;
 
+            // Mix aleatorio de positivos y negativos en TODO el ancho
+            const isNegative = Math.random() > 0.5;
+            const items = isNegative ? negativeItems : positiveItems;
+            const item = items[Math.floor(Math.random() * items.length)];
+
+            const element = document.createElement('div');
+            element.className = `falling-item ${isNegative ? 'negative' : 'positive'} word`;
+            element.textContent = item.content;
+
+            element.dataset.negative = isNegative;
+            element.dataset.points = item.points;
+            element.dataset.clicked = 'false';
+
+            // Posición aleatoria en TODO el ancho (sin verificación de colisiones)
+            const xPosition = 30 + Math.random() * (window.innerWidth - 300);
+            const yPosition = -150;
+
+            element.style.left = xPosition + 'px';
+            element.style.top = yPosition + 'px';
+            element.style.zIndex = Math.floor(Math.random() * 100) + 10;
+
+            gameArea.appendChild(element);
+
+            // Click en el elemento
+            let hasBeenClicked = false;
+            
+            const clickHandler = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (hasBeenClicked) return;
+                hasBeenClicked = true;
+                element.dataset.clicked = 'true';
+
+                // Detener caída inmediatamente
+                if (element.fallInterval) {
+                    clearInterval(element.fallInterval);
+                }
+
+                const isNeg = element.dataset.negative === 'true';
+                const pts = parseInt(element.dataset.points);
+
+                if (isNeg) {
+                    // Clickeó elemento NEGATIVO = RESTA puntos
+                    updateScore(pts);
+                    playSound('shoot');
+                    element.style.transform = 'scale(0.5) rotate(180deg)';
+                } else {
+                    // Clickeó elemento POSITIVO = SUMA puntos
+                    updateScore(pts);
+                    playSound('hit');
+                    createExplosion(
+                        element.getBoundingClientRect().left + element.offsetWidth / 2,
+                        element.getBoundingClientRect().top + element.offsetHeight / 2
+                    );
+                    element.style.transform = 'scale(1.5) rotate(360deg)';
+                }
+
+                // Remover inmediatamente
+                element.style.opacity = '0';
+                element.style.pointerEvents = 'none';
+                
+                setTimeout(() => {
+                    element.removeEventListener('mousedown', clickHandler);
+                    element.removeEventListener('touchstart', clickHandler);
+                    element.remove();
+                }, 300);
+            };
+
+            // Soportar tanto mouse como touch
+            element.addEventListener('mousedown', clickHandler);
+            element.addEventListener('touchstart', clickHandler, { passive: false });
+
+            // Animación de caída
+            let position = yPosition;
+            const screenHeight = window.innerHeight;
+            const totalDistance = screenHeight + 150;
+            const pixelsPerFrame = totalDistance / (gameSpeed / (1000 / 60));
+            
+            const fallInterval = setInterval(() => {
+                if (!gameActive) {
+                    clearInterval(fallInterval);
+                    element.remove();
+                    return;
+                }
+
+                position += pixelsPerFrame;
+                element.style.top = position + 'px';
+
+                // Si llegó MÁS ALLÁ del fondo de la pantalla
+                if (position > screenHeight + 100) {
+                    clearInterval(fallInterval);
+                    
+                    // Remover elemento
+                    if (!hasBeenClicked) {
+                        element.remove();
+                    }
+                }
+            }, 1000 / 60);
+
+            element.fallInterval = fallInterval;
+        }
+
+        // Crear explosión
+        function createExplosion(x, y) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.textContent = '💥';
+            explosion.style.left = x + 'px';
+            explosion.style.top = y + 'px';
+            gameArea.appendChild(explosion);
+
+            setTimeout(() => explosion.remove(), 500);
+        }
+
+        // Emitir conejos decorativos desde pozol o conejo
+        function emitBunnies(element, direction = 'right') {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // Crear entre 5 y 8 conejos
+            const numBunnies = 5 + Math.floor(Math.random() * 4);
+            
+            for (let i = 0; i < numBunnies; i++) {
+                setTimeout(() => {
+                    const bunny = document.createElement('div');
+                    bunny.textContent = '🐰';
+                    bunny.style.position = 'fixed';
+                    bunny.style.left = centerX + 'px';
+                    bunny.style.top = centerY + 'px';
+                    bunny.style.fontSize = '30px';
+                    bunny.style.zIndex = '999';
+                    bunny.style.pointerEvents = 'none';
+                    bunny.style.transition = 'all 1s ease-out';
+                    
+                    document.body.appendChild(bunny);
+                    
+                    // Animar hacia arriba y a los lados según la dirección
+                    setTimeout(() => {
+                        let angle;
+                        if (direction === 'left') {
+                            // Para conejo derecho: emitir hacia la IZQUIERDA (120° a 240°)
+                            angle = 120 + (Math.random() * 120); // 120 a 240 grados
+                        } else {
+                            // Para pozol izquierdo: emitir hacia la DERECHA (-60° a 60°)
+                            angle = (Math.random() * 120) - 60; // -60 a 60 grados
+                        }
+                        
+                        const distance = 150 + Math.random() * 100; // 150-250px
+                        const radians = (angle * Math.PI) / 180;
+                        
+                        bunny.style.transform = `translate(${Math.cos(radians) * distance}px, ${-Math.abs(Math.sin(radians) * distance) - 100}px) rotate(${angle * 2}deg) scale(0.5)`;
+                        bunny.style.opacity = '0';
+                    }, 10);
+                    
+                    setTimeout(() => bunny.remove(), 1100);
+                }, i * 50); // Delay entre cada conejo
+            }
+        }
+
+        // Actualizar puntuación
+        function updateScore(points) {
+            score += points;
+            if (score < 0) score = 0;
+            scoreDisplay.textContent = score;
+
+            // Verificar game over
+            if (score <= 0) {
+                endGame(false);
+            }
+
+            // Actualizar nivel cada 100 puntos Y aumentar velocidad
+            const newLevel = Math.floor(score / 100) + 1;
+            if (newLevel !== level) {
+                level = newLevel;
+                levelDisplay.textContent = level;
+                
+                // Aumentar velocidad por nivel
+                gameSpeed = Math.max(2000, 6000 - (level * 500)); // Más rápido cada nivel
+                spawnInterval = Math.max(600, 1500 - (level * 150)); // Más frecuente cada nivel
+            }
+
+            gtag('event', 'score_update', {
+                'event_category': 'game',
+                'event_label': 'Score',
+                'value': score
+            });
+        }
+
+        // Reproducir sonido
+        function playSound(type) {
+            try {
+                if (type === 'shoot') {
+                    shootSound.currentTime = 0;
+                    shootSound.play().catch(() => {});
+                } else if (type === 'hit') {
+                    hitSound.currentTime = 0;
+                    hitSound.play().catch(() => {});
+                } else if (type === 'tick') {
+                    // Usar hit sound como tick (o agregar tick-sound.mp3)
+                    const tickSound = new Audio();
+                    tickSound.volume = 0.5;
+                    tickSound.src = 'tick-sound.mp3';
+                    tickSound.play().catch(() => {});
+                }
+            } catch (err) {}
+        }
+
+        // Actualizar cronómetro
+        function updateTimer() {
+            const timeRemaining = gameTimeLimit - gameSeconds;
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Cambiar color cuando queden 10 segundos o menos
+            if (timeRemaining <= 10 && timeRemaining > 0) {
+                timerDisplay.style.color = '#F44336'; // Rojo
+                timerDisplay.style.animation = 'blink 0.5s ease-in-out infinite';
+            }
+        }
+
+        // Iniciar cronómetro (cuenta regresiva)
+        function startTimer() {
+            gameSeconds = 0;
+            updateTimer();
+            gameTimer = setInterval(() => {
+                gameSeconds++;
+                updateTimer();
+                
+                const timeRemaining = gameTimeLimit - gameSeconds;
+                
+                // Sonido en los últimos 5 segundos
+                if (timeRemaining <= 5 && timeRemaining > 0) {
+                    playSound('tick');
+                }
+                
+                // Terminar juego después de 2 minutos
+                if (gameSeconds >= gameTimeLimit) {
+                    endGame(true); // Victoria por completar los 2 minutos
+                }
+            }, 1000);
+        }
+
+        // Detener cronómetro
+        function stopTimer() {
+            if (gameTimer) {
+                clearInterval(gameTimer);
+            }
+        }
+
+        // Aumentar dificultad
+        function increaseDifficulty() {
+            difficultyTimer = setInterval(() => {
+                if (gameSpeed > 2000) {
+                    gameSpeed -= 200;
+                }
+                if (spawnInterval > 600) {
+                    spawnInterval -= 100;
+                }
+                // El spawn se ajusta automáticamente con la variable spawnInterval
+            }, 20000);
+        }
+
+        // Iniciar juego
+        function startGame() {
+            welcomeModal.classList.add('hidden');
+            gameActive = true;
+            score = 100;
+            level = 1;
+            gameSpeed = 6000;
+            spawnInterval = 1500; // Más rápido desde el inicio
+            scoreDisplay.textContent = '100';
+            levelDisplay.textContent = '1';
+
+            startCamera();
+            
+            // Reproducir música en loop (nunca se detiene hasta game over)
+            campaignSong.loop = true;
+            campaignSong.play().catch(() => {
+                // Si falla el autoplay, intentar de nuevo en el primer click
+                document.addEventListener('click', () => {
+                    campaignSong.play().catch(() => {});
+                }, { once: true });
+            });
+
+            // Countdown
+            let countdownNum = 3;
+            const countdownElement = document.createElement('div');
+            countdownElement.className = 'countdown';
+            countdownElement.textContent = countdownNum;
+            document.body.appendChild(countdownElement);
+
+            const countdownInterval = setInterval(() => {
+                countdownNum--;
+                if (countdownNum > 0) {
+                    countdownElement.textContent = countdownNum;
+                } else {
+                    countdownElement.textContent = '¡ATRAPA!';
+                    clearInterval(countdownInterval);
+                    setTimeout(() => countdownElement.remove(), 1000);
+                }
+            }, 1000);
+
+            // Iniciar spawn después del countdown (inmediatamente después de "¡ATRAPA!")
             setTimeout(() => {
-              createFallingItem("any"); // No importa el lane
-              scheduleNextSpawn(); // Programar el siguiente
-            }, spawnInterval); // Usa la variable global que se actualiza
-          }
+                // Iniciar cronómetro
+                startTimer();
 
-          // Iniciar el ciclo de spawn INMEDIATAMENTE
-          createFallingItem("any"); // Primer elemento
-          scheduleNextSpawn(); // Resto de elementos
+                // UN SOLO TIMER que crea elementos con delay entre cada uno
+                let spawnDelay = 0;
+                const baseSpawnInterval = spawnInterval;
+                
+                function scheduleNextSpawn() {
+                    if (!gameActive) return;
+                    
+                    setTimeout(() => {
+                        createFallingItem('any'); // No importa el lane
+                        scheduleNextSpawn(); // Programar el siguiente
+                    }, spawnInterval); // Usa la variable global que se actualiza
+                }
+                
+                // Iniciar el ciclo de spawn INMEDIATAMENTE
+                createFallingItem('any'); // Primer elemento
+                scheduleNextSpawn(); // Resto de elementos
+                
+                increaseDifficulty();
+            }, 1000); // Solo 1 segundo después del countdown
 
-          increaseDifficulty();
-        }, 1000); // Solo 1 segundo después del countdown
+            gtag('event', 'game_start', {
+                'event_category': 'game',
+                'event_label': 'Game Started'
+            });
+        }
 
-        gtag("event", "game_start", {
-          event_category: "game",
-          event_label: "Game Started",
-        });
-      }
-
-      // Terminar juego
-      function endGame(won) {
-        gameActive = false;
-        clearInterval(difficultyTimer);
-        stopTimer(); // Detener cronómetro
-
-        gameArea.innerHTML = "";
-        finalScore.textContent = score;
-
-        const minutes = Math.floor(gameSeconds / 60);
-        const seconds = gameSeconds % 60;
-        const timeStr = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-
-        if (won || gameSeconds >= gameTimeLimit) {
-          // Victoria - Completó el minuto
-          gameoverTitle.textContent = "¡TIEMPO TERMINADO! ⏰";
-          gameoverTitle.className = "win";
-          gameoverMessage.innerHTML = `
+        // Terminar juego
+        function endGame(won) {
+            gameActive = false;
+            clearInterval(difficultyTimer);
+            stopTimer(); // Detener cronómetro
+            
+            gameArea.innerHTML = '';
+            finalScore.textContent = score;
+            
+            const minutes = Math.floor(gameSeconds / 60);
+            const seconds = gameSeconds % 60;
+            const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (won || gameSeconds >= gameTimeLimit) {
+                // Victoria - Completó el minuto
+                gameoverTitle.textContent = '¡TIEMPO TERMINADO! ⏰';
+                gameoverTitle.className = 'win';
+                gameoverMessage.innerHTML = `
                     ✨ ¡Algo nuevo está por llegar! ✨<br>
                     Puntuación: <strong>${score} puntos</strong><br>
                     ¡He defendido el pozol! 🏆<br>
                     ¿Podrás superar tu récord? ¡Inténtalo de nuevo! 💪
                 `;
-        } else {
-          // Derrota - Llegó a 0 puntos antes del tiempo
-          gameoverTitle.textContent = "¡SE ACABÓ! 😔";
-          gameoverTitle.className = "lose";
-          gameoverMessage.innerHTML = `
+            } else {
+                // Derrota - Llegó a 0 puntos antes del tiempo
+                gameoverTitle.textContent = '¡SE ACABÓ! 😔';
+                gameoverTitle.className = 'lose';
+                gameoverMessage.innerHTML = `
                     ✨ ¡Algo nuevo está por llegar! ✨<br>
                     Puntuación: <strong>${score} puntos</strong><br>
                     Duraste ${timeStr} defendiendo el pozol<br>
                     ¡No te rindas! ¡Puedes hacerlo mejor! 💪
                 `;
-        }
-
-        // SIEMPRE mostrar botón de compartir
-        gameoverButtons.innerHTML = `
+            }
+            
+            // SIEMPRE mostrar botón de compartir
+            gameoverButtons.innerHTML = `
                 <button class="share-btn" onclick="shareScore()" style="font-size: clamp(1.2rem, 5vw, 1.8rem); padding: 20px 45px;">📱 Compartir en WhatsApp</button>
                 <button class="replay-btn" onclick="restartGame()">🔄 Jugar de nuevo</button>
             `;
 
-        gameoverModal.classList.add("show");
-        campaignSong.pause();
+            gameoverModal.classList.add('show');
+            campaignSong.pause();
 
-        gtag("event", "game_over", {
-          event_category: "game",
-          event_label: won ? "Win" : "Lose",
-          value: score,
-          time: gameSeconds,
-        });
-      }
+            gtag('event', 'game_over', {
+                'event_category': 'game',
+                'event_label': won ? 'Win' : 'Lose',
+                'value': score,
+                'time': gameSeconds
+            });
+        }
 
-      // Reiniciar juego
-      function restartGame() {
-        gameoverModal.classList.remove("show");
-        startGame();
-      }
+        // Reiniciar juego
+        function restartGame() {
+            gameoverModal.classList.remove('show');
+            startGame();
+        }
 
-      // Compartir en WhatsApp
-      function shareScore() {
-        const url = window.location.href;
-        const minutes = Math.floor(gameSeconds / 60);
-        const seconds = gameSeconds % 60;
-        const timeStr = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-
-        // Crear mensaje con saltos de línea reales
-        const messageText = `✨ ¡Algo nuevo está por llegar! ✨
+        // Compartir en WhatsApp
+        function shareScore() {
+            const url = window.location.href;
+            const minutes = Math.floor(gameSeconds / 60);
+            const seconds = gameSeconds % 60;
+            const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Crear mensaje con saltos de línea reales
+            const messageText = `✨ ¡Algo nuevo está por llegar! ✨
 
 🎮 ¡Defendí el pozol durante ${timeStr} con ${score} puntos! 🐰
 
 ¿Podrás superarme? ¡Demuestra que eres el mejor! 💪🏆
 
 👉 Juega aquí: ${url}`;
+            
+            // Codificar correctamente para WhatsApp
+            const encodedMessage = encodeURIComponent(messageText);
+            
+            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
 
-        // Codificar correctamente para WhatsApp
-        const encodedMessage = encodeURIComponent(messageText);
+            gtag('event', 'share', {
+                'event_category': 'social',
+                'event_label': 'WhatsApp Share',
+                'value': score,
+                'time': gameSeconds
+            });
+        }
 
-        window.open(`https://wa.me/?text=${encodedMessage}`, "_blank");
+        // Event Listeners
+        startButton.addEventListener('click', startGame);
 
-        gtag("event", "share", {
-          event_category: "social",
-          event_label: "WhatsApp Share",
-          value: score,
-          time: gameSeconds,
+        // Efectos decorativos para pozol y conejo - SIN SONIDO, solo animación
+        shooterLeft.addEventListener('click', () => {
+            shooterLeft.style.animation = 'none';
+            setTimeout(() => {
+                shooterLeft.style.animation = 'shake 0.5s ease-in-out, bounce-pulse 2s ease-in-out infinite';
+            }, 10);
+            emitBunnies(shooterLeft, 'right'); // Pozol emite hacia la derecha
         });
-      }
 
-      // Event Listeners
-      startButton.addEventListener("click", startGame);
-
-      // Efectos decorativos para pozol y conejo - SIN SONIDO, solo animación
-      shooterLeft.addEventListener("click", () => {
-        shooterLeft.style.animation = "none";
-        setTimeout(() => {
-          shooterLeft.style.animation =
-            "shake 0.5s ease-in-out, bounce-pulse 2s ease-in-out infinite";
-        }, 10);
-        emitBunnies(shooterLeft, "right"); // Pozol emite hacia la derecha
-      });
-
-      shooterRight.addEventListener("click", () => {
-        shooterRight.style.animation = "none";
-        setTimeout(() => {
-          shooterRight.style.animation =
-            "shake 0.5s ease-in-out, bounce-pulse 2s ease-in-out infinite";
-        }, 10);
-        emitBunnies(shooterRight, "left"); // Conejo emite hacia la izquierda
-      });
-
-      window.addEventListener("load", () => {
-        gtag("event", "page_view", {
-          page_title: "JS - Defiende el Pozol",
-          page_location: window.location.href,
+        shooterRight.addEventListener('click', () => {
+            shooterRight.style.animation = 'none';
+            setTimeout(() => {
+                shooterRight.style.animation = 'shake 0.5s ease-in-out, bounce-pulse 2s ease-in-out infinite';
+            }, 10);
+            emitBunnies(shooterRight, 'left'); // Conejo emite hacia la izquierda
         });
-      });
 
-      document.addEventListener("gesturestart", function (e) {
-        e.preventDefault();
-      });
+        window.addEventListener('load', () => {
+            gtag('event', 'page_view', {
+                'page_title': 'JS - Defiende el Pozol',
+                'page_location': window.location.href
+            });
+        });
+
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
     </script>
-  </body>
+</body>
 </html>
